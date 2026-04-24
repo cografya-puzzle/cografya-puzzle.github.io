@@ -419,6 +419,15 @@ function onKeyDown(e) {
   if (e.key === 'ArrowUp')    { e.preventDefault(); activeDir = 'down';   moveActive(cw, r, c, -1,  0); return; }
   if (e.key === 'Tab')        { e.preventDefault(); jumpToNextWord(cw, e.shiftKey); return; }
 
+  // Boşluk tuşu: Bir sonraki hücreye geç
+  if (e.key === ' ' || e.code === 'Space') {
+    e.preventDefault();
+    const dr = activeDir === 'down'   ? +1 : 0;
+    const dc = activeDir === 'across' ? +1 : 0;
+    moveActive(cw, r, c, dr, dc);
+    return;
+  }
+
   if (e.key === 'Backspace') {
     e.preventDefault();
     handleBackspace();
@@ -511,13 +520,21 @@ function checkWordIfComplete(cw, r, c, dir) {
     }, i * 80);
   });
 
-  // Doğruysa animasyon bitince klavyeyi kapat
-  if (allCorrect && overlayVisible) {
+  // Doğruysa animasyon bitince akışa göre davran
+  if (allCorrect) {
     const closingDelay = cells.length * 80 + 700;
     setTimeout(() => {
-      document.getElementById('hiddenInput').blur();
-      // Klavye kapandıktan sonra bütünlük kontrolü yap
-      setTimeout(() => checkAutoComplete(generatedPuzzles[currentIdx]), 300);
+      // Tüm bulmaca bitmiş mi kontrol et
+      const allKeys = Object.keys(cw.grid);
+      const puzzleFinished = allKeys.every(k => normCmp(userLetters[k] || '') === normCmp(cw.grid[k]));
+      
+      if (puzzleFinished) {
+        document.getElementById('hiddenInput').blur();
+        setTimeout(() => checkAutoComplete(generatedPuzzles[currentIdx]), 300);
+      } else {
+        // Bitmediyse bir sonraki kelimeye atla (klavye açık kalsın)
+        jumpToNextWord(cw, false);
+      }
     }, closingDelay);
   }
 }

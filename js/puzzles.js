@@ -161,7 +161,7 @@ const PUZZLES = [
       { clue: "Birbirine yakın çizilen izohipsler", answer: "YAMAÇ" },
     ],
     down: [
-      { clue: "Akarsu yataklarında içeri doğru V", answer: "DELTA" },
+      { clue: "Akarsu yataklarında içeri doğru V", answer: "VADİ" },
       { clue: "Karadan denize doğru üçgen çıkıntı", answer: "DELTA" },
       { clue: "İzohipslerin kıyı çizgisinde üst üste gelmesi", answer: "FALEZ" },
     ],
@@ -308,7 +308,7 @@ const PUZZLES = [
     title: "Rüzgarlar & Basınç (2/2)",
     across: [
       { clue: "Yatay yöndeki hareketi çevreden merkeze olan basınç", answer: "ALÇAKBASINÇ" },
-      { clue: "Havanın ısınıp soğuması sonüçu oluşan basınç türü", answer: "TERMİK" },
+      { clue: "Havanın ısınıp soğuması sonucu oluşan basınç türü", answer: "TERMİK" },
       { clue: "Hava kütlelerinin Güney Yarım Küre'de sapma yönü", answer: "SOL" },
     ],
     down: [
@@ -336,7 +336,7 @@ const PUZZLES = [
   {
     title: "Nem & Yoğunlaşma (2/2)",
     across: [
-      { clue: "Ani sıcaklık değişimleri sonüçu oluşan yoğunlaşma ürünü", answer: "KIRAĞI" },
+      { clue: "Ani sıcaklık değişimleri sonucu oluşan yoğunlaşma ürünü", answer: "KIRAĞI" },
       { clue: "Atmosferde gaz hâlinde bulunan su buharı", answer: "NEM" },
       { clue: "Sıcak ve soğuk havanın karşılaşma alanı", answer: "CEPHE" },
       { clue: "Atmosferde sıcaklık ve nem bakımından benzerlik gösteren büyük parçalar", answer: "HAVAKÜTLESİ" },
@@ -367,7 +367,7 @@ const PUZZLES = [
     across: [
       { clue: "Ilıman okyanusal iklimde yağışların en fazla görüldüğü mevsim", answer: "KIŞ" },
       { clue: "Çöl ikliminde görülen kuraklığa dayanıklı bitki türü", answer: "KAKTÜS" },
-      { clue: "Akdeniz ikliminde kızılçamların tahribi sonüçu ortaya çıkan bitki örtüsü", answer: "MAKİ" },
+      { clue: "Akdeniz ikliminde kızılçamların tahribi sonucu ortaya çıkan bitki örtüsü", answer: "MAKİ" },
     ],
     down: [
       { clue: "İklimlerin sınıflandırılmasında kullanılan en önemli unsur", answer: "SICAKLIK" },
@@ -550,7 +550,7 @@ const PUZZLES = [
     across: [
       { clue: "Yaşanılan alanlarda elektrikle çalışan cihazların neden olduğu kirlilik", answer: "ELEKTROMANYETİK" },
       { clue: "İstenmeyen zararlı maddelerin suya karışması", answer: "SUKİRLİLİĞİ" },
-      { clue: "Yangınlar, hayvan otlatma, tarla açma ve odun ihtiyacının karşılanması sonüçu orman zararı", answer: "ORMANTAHRİP" },
+      { clue: "Yangınlar, hayvan otlatma, tarla açma ve odun ihtiyacının karşılanması sonucu orman zararı", answer: "ORMANTAHRİP" },
     ],
     down: [
       { clue: "1986 yılında Ukrayna'da patlayan nükleer santral", answer: "ÇERNOBİL" },
@@ -571,7 +571,7 @@ const PUZZLES = [
       { clue: "Türkiye'de deprem riskinin düşük olduğu şehirlerden biri", answer: "KARAMAN" },
       { clue: "26 Aralık 2004'te Endonezya çevresinde yaşanan 21. yüzyılın en şiddetli ekstrem olayı", answer: "TSUNAMİ" },
       { clue: "Dünyanın en büyük su taşıma projesine sahip ülke", answer: "ÇİN" },
-      { clue: "Heyelan sonüçu oluşmuş göllerimizden biri", answer: "TORTUM" },
+      { clue: "Heyelan sonucu oluşmuş göllerimizden biri", answer: "TORTUM" },
     ],
   },
   {
@@ -745,7 +745,7 @@ const PUZZLES = [
     title: "Türkiye Turizmi (2/2)",
     across: [
       { clue: "Antalya'da kış turizmine elverişli olan bir dağ", answer: "SAKLIKENT" },
-      { clue: "Türkiye'de deniz turizmi sezönünün en kısa olduğu kıyılarımız", answer: "KARADENİZ" },
+      { clue: "Türkiye'de deniz turizmi sezonunun en kısa olduğu kıyılarımız", answer: "KARADENİZ" },
       { clue: "Raftinge uygun olan bir akarsuyumuz", answer: "ÇORUH" },
       { clue: "Genç volkan konileriyle turist çeken bir yöremiz", answer: "KAPADOKYA" },
     ],
@@ -957,14 +957,14 @@ const PUZZLES = [
   {
     title: "Su Kaynakları (2/2)",
     across: [
-      { clue: "Buzul aşındırması sonüçu oluşan çukurlarda biriken su ile oluşan göl türü", answer: "SİRK" },
+      { clue: "Buzul aşındırması sonucu oluşan çukurlarda biriken su ile oluşan göl türü", answer: "SİRK" },
       { clue: "Dünyanın en yüksek şelalesi", answer: "ANGEL" },
       { clue: "Denizlerin karaların içine girdiği bölüm", answer: "KÖRFEZ" },
       { clue: "Afrika kıtasının en büyük akarsuyu", answer: "NİL" },
     ],
     down: [
       { clue: "Kutuplarda ve yüksek dağlık alanlarda katı hâlde bulunan su kütleleri", answer: "BUZUL" },
-      { clue: "Koy ya da körfez önünün kıyı kordonuyla kapanması sonüçu oluşan göl", answer: "LAGÜN" },
+      { clue: "Koy ya da körfez önünün kıyı kordonuyla kapanması sonucu oluşan göl", answer: "LAGÜN" },
       { clue: "Dünyanın en derin ve en yaşlı göllerinden biri", answer: "BAYKAL" },
       { clue: "Akarsularla su toplama alanlarının adı", answer: "HAVZA" },
     ],
@@ -1036,15 +1036,15 @@ const PUZZLES = [
   {
     title: "İç Kuvvetler (2/2)",
     across: [
-      { clue: "Magmadan yeryüzüne gelen gazların patlaması sonüçu oluşan çukur", answer: "MAAR" },
+      { clue: "Magmadan yeryüzüne gelen gazların patlaması sonucu oluşan çukur", answer: "MAAR" },
       { clue: "Kara kütlelerinin bir bütün olarak yükselmesi ya da alçalması", answer: "EPİROJENEZ" },
-      { clue: "Yeni bir patlama ya da çökme sonüçu kraterin genişlemesiyle oluşan çanaklar", answer: "KALDERA" },
+      { clue: "Yeni bir patlama ya da çökme sonucu kraterin genişlemesiyle oluşan çanaklar", answer: "KALDERA" },
       { clue: "Magmanın tabakaları keserek damar şeklinde katılaşmasıyla oluşan şekil", answer: "DAYK" },
     ],
     down: [
       { clue: "Akdeniz-Himalaya Deprem Kuşağında yer alan ülkelerden biri", answer: "TÜRKİYE" },
-      { clue: "Levha hareketleriyle meydana gelen yer değiştirme ve kırılma sonüçu oluşan deprem türü", answer: "TEKTONİK" },
-      { clue: "Volkan konilerinin üst kesiminde patlama sonüçu oluşan çukurlar", answer: "KRATER" },
+      { clue: "Levha hareketleriyle meydana gelen yer değiştirme ve kırılma sonucu oluşan deprem türü", answer: "TEKTONİK" },
+      { clue: "Volkan konilerinin üst kesiminde patlama sonucu oluşan çukurlar", answer: "KRATER" },
       { clue: "Yer kabuğu hareketleri sırasında meydana gelen kırıklar", answer: "FAY" },
     ],
   },
@@ -1119,7 +1119,7 @@ const PUZZLES = [
     title: "Kayaçlar (2/2)",
     across: [
       { clue: "Kanyonların oluşumunda etkili sert kristal yapılı magmatik kütle", answer: "GRANİT" },
-      { clue: "Granitin yüksek sıcaklık ve basınç altında değişime uğraması sonüçu oluşan taş", answer: "GNAYS" },
+      { clue: "Granitin yüksek sıcaklık ve basınç altında değişime uğraması sonucu oluşan taş", answer: "GNAYS" },
       { clue: "Kayaçların oluşumu sırasında kimyasal ve fiziksel koşulların değişmesiyle mineralojik dönüşüm süreci", answer: "METAMORFİZMA" },
       { clue: "Kalkerli arazilerdeki mağaraların tavanından aşağı doğru uzanan şekil", answer: "SARKIT" },
     ],
@@ -1140,7 +1140,7 @@ const PUZZLES = [
     ],
     down: [
       { clue: "Akarsular tarafından derince yarılmış yüksek düzlük", answer: "YAYLA" },
-      { clue: "Genç volkanik arazilerde aşındırma sonüçu oluşan ve Nevşehir çevresinde yaygın şekil", answer: "PERİBACASI" },
+      { clue: "Genç volkanik arazilerde aşındırma sonucu oluşan ve Nevşehir çevresinde yaygın şekil", answer: "PERİBACASI" },
       { clue: "Orta Karadeniz kıyılarında yer alan az yüksek dağ sırası", answer: "CANİK" },
       { clue: "Eğimli arazilerde oluşan akarsuların meydana getirdiği vadi tipi", answer: "BOĞAZ" },
     ],

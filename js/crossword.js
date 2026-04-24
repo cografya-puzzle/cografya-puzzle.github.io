@@ -20,7 +20,8 @@ class CrosswordGenerator {
     // Max-row cap: prevents grid from overflowing a page
     const maxClues = Math.max(puzzle.across.length, puzzle.down.length);
     const frac     = maxClues > 15 ? 0.34 : maxClues > 12 ? 0.38 : 0.42;
-    this.maxRows   = Math.floor((window.innerHeight * frac) / 20);
+    // Esnetilmiş sınır: En az 22 satıra izin ver (NÜFUSPROJEKSİYONU vb. için güvenli)
+    this.maxRows   = Math.max(22, Math.floor((window.innerHeight * frac) / 20));
   }
 
   // Normalize answer: strip spaces (e.g. "SU BUHARI" → "SUBUHARI")
