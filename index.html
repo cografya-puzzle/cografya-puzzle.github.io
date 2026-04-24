@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Criss-Cross Bulmaca Araci</title>
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+  }
+  .header {
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .nav-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav-controls button {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s;
+    font-family: inherit;
+  }
+  .nav-controls button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
+  .nav-controls button:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+  .nav-controls span {
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+    min-width: 130px;
+    text-align: center;
+  }
+  .main-container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+    align-items: flex-start;
+  }
+  .puzzle-panel {
+    flex: 0 0 auto;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    padding: 24px;
+  }
+  .puzzle-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #2d3748;
+    text-align: center;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #f7f8fc, #eef0f7);
+    border-radius: 8px;
+  }
+  #puzzleCanvas {
+    display: block;
+    border-radius: 4px;
+  }
+  .clues-panel {
+    flex: 1;
+    display: flex;
+    gap: 16px;
+    min-width: 0;
+  }
+  .clue-section {
+    flex: 1;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    padding: 20px;
+    min-width: 0;
+  }
+  .clue-section h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 14px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    letter-spacing: 0.5px;
+  }
+  .clue-section:first-child h3 { background: linear-gradient(135deg, #667eea, #5a67d8); }
+  .clue-section:last-child h3 { background: linear-gradient(135deg, #e53e3e, #c53030); }
+  .clue-item {
+    font-size: 12.5px;
+    line-height: 1.7;
+    padding: 5px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .clue-item:last-child { border-bottom: none; }
+  .clue-num { font-weight: 700; color: #667eea; margin-right: 5px; }
+  .action-bar {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .action-bar button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 12.5px;
+    font-weight: 600;
+    transition: all 0.3s;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .action-bar button:hover { transform: translateY(-1px); }
+  .btn-download { background: #48bb78; color: white; }
+  .btn-download:hover { box-shadow: 0 4px 12px rgba(72,187,120,0.4); }
+  .btn-answer { background: #ed8936; color: white; }
+  .btn-answer:hover { box-shadow: 0 4px 12px rgba(237,137,54,0.4); }
+  .btn-docx { background: linear-gradient(135deg, #4299e1, #3182ce); color: white; }
+  .btn-docx:hover { box-shadow: 0 4px 12px rgba(66,153,225,0.4); }
+  .btn-docx-all { background: linear-gradient(135deg, #805ad5, #6b46c1); color: white; }
+  .btn-docx-all:hover { box-shadow: 0 4px 12px rgba(128,90,213,0.4); }
+  .btn-docx-answers { background: linear-gradient(135deg, #e53e3e, #c53030); color: white; }
+  .btn-docx-answers:hover { box-shadow: 0 4px 12px rgba(229,62,62,0.4); }
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+  }
+  .loading-overlay.show { display: flex; }
+  .loading-box {
+    background: white;
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .loading-box p { font-size: 16px; font-weight: 600; color: #2d3748; margin-top: 16px; }
+  .spinner {
+    width: 48px; height: 48px;
+    border: 4px solid #e2e8f0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 1100px) {
+    .main-container { flex-direction: column; align-items: center; }
+    .clues-panel { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <p id="loadingText">DOCX hazırlanıyor...</p>
+  </div>
+</div>
+
+<div class="header">
+  <h1>Criss-Cross Bulmaca</h1>
+  <div class="nav-controls">
+    <button id="btnPrev" onclick="navigate(-1)">&larr; Onceki</button>
+    <span id="puzzleLabel">Bulmaca 1 / 31</span>
+    <button id="btnNext" onclick="navigate(1)">Sonraki &rarr;</button>
+  </div>
+</div>
+
+<div class="main-container">
+  <div class="puzzle-panel">
+    <div class="puzzle-title" id="puzzleTitle"></div>
+    <canvas id="puzzleCanvas"></canvas>
+    <div class="action-bar">
+      <button class="btn-download" onclick="downloadPNG(false)">PNG Bos</button>
+      <button class="btn-answer" onclick="downloadPNG(true)">PNG Cevapli</button>
+      <button class="btn-docx" onclick="downloadSingleDocx(false)">DOCX Bos</button>
+      <button class="btn-docx" onclick="downloadSingleDocx(true)">DOCX Cevapli</button>
+    </div>
+    <div class="action-bar" style="margin-top:8px">
+      <button class="btn-docx-all" onclick="downloadAllDocx()">Tum Bulmacalar DOCX (Cevapli Sonda)</button>
+    </div>
+  </div>
+  <div class="clues-panel">
+    <div class="clue-section">
+      <h3>SOLDAN SAGA &rarr;</h3>
+      <div id="acrossClues"></div>
+    </div>
+    <div class="clue-section">
+      <h3>YUKARIDAN ASAGIYA &darr;</h3>
+      <div id="downClues"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ PUZZLE DATA ============
+const PUZZLES = [
+  {
+    title: "Türkiye Coğrafyası & Ekonomisi",
+    across: [
+      { clue: "Ülkemizde çay üretim bölgesi", answer: "DOĞUKARADENIZ" },      { clue: "Ülkemizdeki petrol rafinerisi (şehir)", answer: "BATMAN" },      { clue: "Yazılıkaya anitini birakan uygarlik", answer: "FRIG" },      { clue: "Turkiye'de görülmeyen afetlerden biri", answer: "TSUNAMI" },      { clue: "Sumela Manastiri'nin olduğu şehir", answer: "TRABZON" },      { clue: "Balik avciliginin en çok yapildigi deniz", answer: "KARADENİZ" },      { clue: "Celige sertlik veren maden", answer: "KROM" },      { clue: "Turkiye'nin en buyuk delta ovasi", answer: "ÇUKUROVA" }    ],
+    down: [
+      { clue: "Hamitabat'ta kullanılan kaynak", answer: "DOĞALGAZ" },      { clue: "Keban, Karakaya barajlarinin olduğu nehir", answer: "FIRAT" },      { clue: "Ekonomiyi etkileyen faktorlerden biri", answer: "İKLİM" },      { clue: "Peribacalarinin bulundugu şehir", answer: "NEVŞEHİR" },      { clue: "Murgul'da cikarilan maden", answer: "BAKIR" },      { clue: "Devlet Planlama Teskilati kisaltmasi", answer: "DPT" },      { clue: "Milli gelire en çok katki saglayan sektor", answer: "HİZMET" },      { clue: "Medeniyetler besigi olan yarimada", answer: "ANADOLU" },      { clue: "Aynalarin sirlanmasinda kullanilan maden", answer: "CIVA" },      { clue: "Üretimde dünya birincisi olduğumuz maden", answer: "BOR" }    ]
+  },
+  {
+    title: "Dünya Coğrafyası (Hollanda, Hindistan, Japonya)",
+    across: [
+      { clue: "Hollanda'nin bulundugu kıta", answer: "AVRUPA" },      { clue: "Hindistan'in en önemli tarim ürünü", answer: "PİRİNÇ" },      { clue: "Avrupa'nin en alcak ulkesi", answer: "HOLLANDA" },      { clue: "Hindistan'in kuzeybatisindaki çöl", answer: "TAR" },      { clue: "Ingiltere'nin ilk sanayi sehirlerinden biri", answer: "MANCHESTER" },      { clue: "Hollanda'da gorulen iklim tipi", answer: "OKYANUSAL" },      { clue: "Sera sebzeleri uretiminde birinci olan ülke", answer: "HOLLANDA" },      { clue: "Askeri orgutlerden biri", answer: "NATO" }    ],
+    down: [
+      { clue: "Buyukbas hayvanda dünya birincisi", answer: "HİNDİSTAN" },      { clue: "Denizden kazanilan topraklar (Hollanda)", answer: "POLDER" },      { clue: "Japonya'nin doğal gaz aldigi ülke", answer: "AVUSTRALYA" },      { clue: "AB'ye 2007'de uye olan devlet", answer: "ROMANYA" },      { clue: "Hindistan'in bati komsusu", answer: "PAKİSTAN" },      { clue: "Japonya'nin en kuzeydeki adasi", answer: "HOKKAIDO" },      { clue: "Sanayi devriminin basladigi ülke", answer: "İNGİLTERE" },      { clue: "En yaygin üretim faaliyeti", answer: "TARIM" },      { clue: "Japonya'nin baskenti", answer: "TOKYO" },      { clue: "Japonya'da etkili olan iklim tipi", answer: "MUSON" }    ]
+  },
+  {
+    title: "Coğrafyanın Alt Dalları",
+    across: [
+      { clue: "Canlilarin dagilisini inceleyen bilim", answer: "BİYOCOĞRAFYA" },      { clue: "Yer sekillerini inceleyen bilim", answer: "JEOMORFOLOJİ" },      { clue: "Doğal ortami inceleyen ana bilim dali", answer: "FİZİKİ" },      { clue: "Akarsu, gol ve denizlerin hepsi", answer: "HİDROGRAFYA" },      { clue: "Isvec, Norvec, Finlandiya'nin olduğu yer", answer: "İSKANDİNAVYA" },      { clue: "Sulari inceleyen cografya bilimi", answer: "HİDROLOJİ" },      { clue: "Kanada ve Iskandinavya'daki yerli halk", answer: "ESKİMO" },      { clue: "Cografya terimini ilk defa kullanan kisi", answer: "ERATOSTHENES" }    ],
+    down: [
+      { clue: "Gazlarin karisimi (Hava küre)", answer: "ATMOSFER" },      { clue: "Olaylarin meydana geldiği boyutlu mekan", answer: "COĞRAFİORTAM" },      { clue: "Insanin oluşturdugu unsurlar", answer: "BEŞERİ" },      { clue: "Iklimi inceleyen bilim", answer: "KLİMATOLOJİ" },      { clue: "Kati yer kabugu", answer: "LİTOSFER" },      { clue: "Canlilarin yasadigi yer", answer: "BİYOSFER" },      { clue: "Bitki, hayvan ve insanin olduğu küre", answer: "BİYOSFER" }    ]
+  },
+  {
+    title: "Mevsimler & Güneş Hareketleri",
+    across: [
+      { clue: "Gündüz süresinin 12 saat olduğu tarihler", answer: "EKİNOKS" },      { clue: "Dönenceler arasında kalan alan", answer: "TROPİKALKUŞAK" },      { clue: "Ekinoks ve solstis tarihleri arası dönem", answer: "MEVSİM" },      { clue: "21 Haziran'da gölgenin oluşmadığı enlem", answer: "YENGEÇ" },      { clue: "Güney Yarım Küre'de kışın başladığı ay", answer: "HAZIRAN" },      { clue: "Güneş'in Yengeç Dönencesi'ne dik geldiği gün", answer: "YIRMIBIRHAZIRAN" },      { clue: "K.Y.K'de gündüzlerin uzamaya başladığı ay", answer: "ARALIK" }    ],
+    down: [
+      { clue: "G.Y.K'de güneş ışınlarının dik geldiği sınır", answer: "OĞLAK" },      { clue: "Aydınlanma çemberinin geçtiği enlemler", answer: "KUTUPDAİRESİ" },      { clue: "Kış ve yaz mevsimi başlangıçları", answer: "GÜNDÖNÜMÜ" },      { clue: "K.Y.K'de 21 Mart'ta başlayan mevsim", answer: "İLKBAHAR" },      { clue: "Aydınlanma çemberinin yıl boyu böldüğü enlem", answer: "EKVATOR" }    ]
+  },
+  {
+    title: "Koordinatlar & Saat Dilimleri",
+    across: [
+      { clue: "24 tane olan on beserli meridyen kumesi", answer: "SAATDİLİMİ" },      { clue: "Uzerinden en fazla saat dilimi gecen ülke", answer: "RUSYA" },      { clue: "Ayni boylam üzerinde ayni olan tek değer", answer: "YERELSAATİ" },      { clue: "Ekvator'un 23d 27' guneyindeki enlem", answer: "OĞLAK" },      { clue: "Ekvator ile dönenceler arasindaki paraleller", answer: "ALÇAKENLEM" },      { clue: "Bir meridyeni 180 dereceye tamamlayan yay", answer: "ANTİMERİDYEN" },      { clue: "Güneş'in en yüksek açıyla geldiği an", answer: "ÖĞLEVAKTI" }    ],
+    down: [
+      { clue: "Baslangic Meridyeni'ne uzakligin aci değeri", answer: "BOYLAM" },      { clue: "Dogusuyla batisi arasinda bir gun fark olan çizgi", answer: "TARİHDEĞİŞTİRME" },      { clue: "En buyuk paralel dairesi", answer: "EKVATOR" },      { clue: "Ayni anda birden fazla ortak saat kullanan ülke", answer: "ABD" },      { clue: "Londra yakinindaki kasaba", answer: "GREENWICH" },      { clue: "Ekvator'a uzakligin aci cinsinden değeri", answer: "ENLEM" },      { clue: "Turkiye'nin kis saati için kullandigi şehir", answer: "IĞDIR" }    ]
+  },
+  {
+    title: "İzohips & Yer Şekilleri",
+    across: [
+      { clue: "Derinligi 200 metreye kadar olan alanlar", answer: "ŞELF" },      { clue: "Kapali egriler uzerindeki ice doğru ok isareti", answer: "ÇANAK" },      { clue: "En ictteki egrinin gosterdigi yer sekli", answer: "DORUK" },      { clue: "Iki tepe arasindaki en alcak kesim", answer: "BOYUN" },      { clue: "Ayni yukseltideki noktalari birlestiren egriler", answer: "İZOHİPS" },      { clue: "Izohipsler arasindaki sabit yukselti araligi", answer: "EKUİDİSTANS" },      { clue: "Birbirine yakin cizilen izohipsler", answer: "YAMAÇ" }    ],
+    down: [
+      { clue: "Denizin akarsu agzinda iceri girmesi", answer: "HALİÇ" },      { clue: "Yukseltinin arttigi yone doğru acik V", answer: "SIRT" },      { clue: "Denizle karanin birlestigi 0 metre egrisi", answer: "KIYICİZGİSİ" },      { clue: "Aksrsularin sik gecirildigi yer sekli", answer: "VADI" },      { clue: "Akarsu yataklarinda iceri doğru V", answer: "DELTA" },      { clue: "Karadan denize doğru ucgen cikinti", answer: "DELTA" },      { clue: "Izohipslerin kıyı cizgisinde üst uste gelmesi", answer: "FALEZ" }    ]
+  },
+  {
+    title: "Harita Bilgisi",
+    across: [
+      { clue: "Uc boyutlu ve gercege en uygun harita", answer: "KABARTMA" },      { clue: "Özel bir konu için hazirlanan harita", answer: "TEMATİK" },      { clue: "Haritalardaki kucultme orani", answer: "ÖLÇEK" },      { clue: "Harita cizimi için kagida aktarma yontemi", answer: "PROJEKSİYON" },      { clue: "Ölçeği 1/20.000'den buyuk harita", answer: "PLAN" },      { clue: "1/20.000 - 1/200.000 arasi olcekli harita", answer: "TOPOGRAFYA" },      { clue: "Ekvator çevresi için kullanilan projeksiyon", answer: "SİLİNDİRİK" },      { clue: "Renklendirme yontemiyle hazirlanan harita", answer: "FİZİKİ" },      { clue: "Arazinin tam tepeden gorunusu", answer: "KUŞBAKIŞI" }    ],
+    down: [
+      { clue: "Belirli olcekle kucultulerek duzleme aktarma", answer: "HARITA" },      { clue: "Deniz seviyesine göre ayni derinlikteki noktalar", answer: "İZOBAT" },      { clue: "Yeryuzu sekillerinin dagilisini gosteren harita", answer: "FİZİKİ" },      { clue: "Olceksiz kabataslak cizim", answer: "KROKİ" },      { clue: "Ayni yukseltideki noktalari birlestiren egri", answer: "İZOHİPS" },      { clue: "Kutup cevreleri haritalari için projeksiyon", answer: "DÜZLEM" },      { clue: "Orta enlemler için kullanilan projeksiyon", answer: "KONİK" }    ]
+  },
+  {
+    title: "Çevre Kirliliği",
+    across: [
+      { clue: "1993'te çöp patlamasinin yasandigi şehir", answer: "İSTANBUL" },      { clue: "Hava kirliliginin neden olduğu hastalik", answer: "ASTIM" },      { clue: "Çöplerin yol actigi çevresel etkiler", answer: "KİRLİLİK" },      { clue: "Bataklık gazinin diger adi", answer: "METAN" },      { clue: "CO ile formule edilen gaz", answer: "KARBONMONOKSİT" },      { clue: "Isınmaya neden olan gazlarin etkisi", answer: "SERAETKİSİ" },      { clue: "Zararli isinlari suzen gaz", answer: "OZON" },      { clue: "Antropojenik karbon kaynaklari", answer: "FOSİLYAKIT" },      { clue: "Geri dönüşümun en duzenli uygulandigi ülke", answer: "ALMANYA" },      { clue: "Kültürel çevre kirliligi", answer: "GÜRÜLTÜ" }    ],
+    down: [
+      { clue: "Tarihi yapilari yipratan yağış", answer: "ASİTYAĞMURU" },      { clue: "Kulak zari patlamasina neden olan kirlilik", answer: "SES" },      { clue: "Orman yanginlarinin arttigi mevsim", answer: "YAZ" },      { clue: "Elektromanyetik kirlilik kaynaklari", answer: "TELEFON" },      { clue: "Atiklardan tekrar yararlanma", answer: "GERİDÖNÜŞÜM" },      { clue: "Kukurtdioksitin suyla birlesmesi", answer: "LONDRA" },      { clue: "Su kirlenmesiyle yayilan hastalik", answer: "KOLERA" },      { clue: "O ile formule edilen gaz", answer: "OKSİJEN" }    ]
+  },
+  {
+    title: "Doğal Kaynaklar & Enerji",
+    across: [
+      { clue: "Bakir ve kalayin alasimiyla bulunan maden", answer: "TUNÇ" },      { clue: "Evsel kizartma yaglarindan üretilen yakit turu", answer: "BİYODİZEL" },      { clue: "Hizla collesmis gol adi", answer: "ARAL" },      { clue: "Toprak kullaniminin ortaya cikardigi meslek", answer: "ÇİFTÇİLİK" },      { clue: "Beyaz komur denilen doğal kaynak", answer: "SU" },      { clue: "21. yuzyilin yakiti olarak gorulen element", answer: "BOR" },      { clue: "Hayvanlarin evcillestirilmesiyle onemi artan kaynak", answer: "MERA" },      { clue: "Dünyada ilk petrol kuyusunun acildigi ülke", answer: "ABD" },      { clue: "Aswan Baraji'nin kuruldugu nehir", answer: "NIL" },      { clue: "Gemi yapiminda kullanilan doğal kaynaklar", answer: "ORMAN" }    ],
+    down: [
+      { clue: "Orta Doğu ülkelerinin en önemli doğal kaynağı", answer: "PETROL" },      { clue: "Uranyumdan sağlanan enerji", answer: "NÜKLEER" },      { clue: "Rüzgar enerjisinde öncü ülkelerden biri", answer: "ALMANYA" },      { clue: "İnsanların doğal ürünlerden elde ettiği enerji", answer: "BİYOKÜTLE" },      { clue: "Kabataş çağının icatlarından biri", answer: "BALTA" },      { clue: "Kesintisiz, temiz ve alternatif enerji kaynağı", answer: "GÜNEŞ" },      { clue: "Üç Boğaz Barajı'nın bulunduğu ülke", answer: "ÇİN" },      { clue: "Bitkilerin kültüre alınmasıyla önemi artan kaynak", answer: "TOPRAK" }    ]
+  },
+  {
+    title: "Dünya'nın Hareketleri",
+    across: [
+      { clue: "Yorunge duzlemini dik kestigi kabul edilen hayali çizgi", answer: "YÖRÜNGEEKSENI" },      { clue: "Güneş doğarken yaşanan alacakaranlık", answer: "TAN" },      { clue: "Dünyanın Güneş etrafında hareketi sırasında izlediği yol", answer: "YÖRÜNGE" },      { clue: "Dairesel hareket yapan cismin birim zamanda taradigi aci", answer: "AÇISALHIZ" },      { clue: "Dünyanın Güneş etrafında yaptığı hareket", answer: "YILLIKHAREKET" },      { clue: "Dönenceler ve kutup dairelerinin olusum nedeni", answer: "EKSENEĞİKLİĞİ" },      { clue: "Dünyanın kendine has sekli", answer: "GEOİT" },      { clue: "Cisimlerin birim zamanda aldigi yol", answer: "ÇİZGİSELHIZ" }    ],
+    down: [
+      { clue: "Dünyanın kendi ekseni etrafında tam bir devri", answer: "GÜNLÜKHAREKET" },      { clue: "Dünyanın Güneş'e en uzak olduğu tarih", answer: "GÜNÖTE" },      { clue: "Kutuplardan ve yerin merkezinden gectigi varsayilan çizgi", answer: "YEREKSENİ" },      { clue: "Dunyayi iki esit parcaya bolen hayali çizgi", answer: "EKVATOR" },      { clue: "Gece ve gunduzun olusum nedeni", answer: "GÜNLÜKHAREKET" },      { clue: "Dönme ile oluşan merkezkaç kuvveti", answer: "KORİYOLİS" },      { clue: "Güneş batarken yaşanan alacakaranlık", answer: "GÜRUP" }    ]
+  },
+  // ===== YENI BULMACALAR (11-31) =====
+  {
+    title: "Rüzgarlar & Basınç",
+    across: [
+      { clue: "Fransa uzerinden gelen soguk yerel rüzgar", answer: "MİSTRAL" },      { clue: "Misir'dan Akdeniz kiyilarina esen sıcak rüzgar", answer: "HAMSIN" },      { clue: "Buyuk Sahra'dan Akdeniz'e doğru esen sıcak rüzgar", answer: "SİROKKO" },      { clue: "Orta kusak karalarinin bati kiyilarina yağış birakan surekli rüzgar", answer: "BATIRÜZGARLARI" },      { clue: "Yatay yondeki hareketi cevreden merkeze olan basınç", answer: "ALÇAKBASINÇ" },      { clue: "Havanin ısınıp soğumasi sonucu oluşan basınç turu", answer: "TERMİK" },      { clue: "Hava kutlelerinin Güney Yarim Küre'de sapma yonu", answer: "SOL" }    ],
+    down: [
+      { clue: "Dünyanın gunluk hareketine bağlı olarak oluşan basınç turu", answer: "DİNAMİK" },      { clue: "Es basınç egrisi", answer: "İZOBAR" },      { clue: "Gazlarin yere uygulamis olduğu agirlik", answer: "BASINÇ" },      { clue: "Ticaret ruzgari olarak da bilinen surekli rüzgar", answer: "ALİZE" },      { clue: "Basıncı olcen alet", answer: "BAROMETRE" },      { clue: "1013 mb yüksek olan basınç", answer: "NORMAL" },      { clue: "Güneydoğu Asya'da etkili olan rüzgar", answer: "MUSON" },      { clue: "Soguk ve kuru karakterdeki surekli rüzgar", answer: "KUTUPYELLERİ" }    ]
+  },
+  {
+    title: "Nem & Yoğunlaşma",
+    across: [
+      { clue: "Mutlak nemin en az olduğu yer", answer: "KUTUPLAR" },      { clue: "Yagisin yil içindeki dagilisi", answer: "REJIM" },      { clue: "0 derecenin üstünde yerde oluşan yoğunlasma ürünü", answer: "CIG" },      { clue: "Yağış getirmeyen tuy sacak seklindeki bulutlar", answer: "SİRRUS" },      { clue: "Genelde yağış getiren koyu renkli tabaka seklindeki bulutlar", answer: "NİMBUS" },      { clue: "Ani sıcaklık degisimleri sonucu oluşan yoğunlasma ürünü", answer: "KIRAĞI" },      { clue: "Atmosferde gaz halinde bulunan su buhari", answer: "NEM" },      { clue: "Sıcak ve soguk havanin karsilasma alani", answer: "CEPHE" },      { clue: "Atmosferde sıcaklık ve nem bakimindan benzerlik gosteren buyuk parcalar", answer: "HAVAKÜTLESİ" }    ],
+    down: [
+      { clue: "Kumeler bicimindeki bulutlar", answer: "KÜMÜLÜS" },      { clue: "Yağış miktarini olcen alet", answer: "PLÜVİYOMETRE" },      { clue: "Bulutluluk oranini olcen alet", answer: "NEFOSKOP" },      { clue: "Havadaki su buharinin kati ya da sivi hale donusmesi", answer: "YOĞUNLAŞMA" },      { clue: "Havadaki nem miktarini olcen alet", answer: "HİGROMETRE" },      { clue: "Gorus mesafesini dusuren yoğunlasma ürünü", answer: "SİS" }    ]
+  },
+  {
+    title: "İklim Tipleri & Bitki Örtüsü",
+    across: [
+      { clue: "Yuzlerce km karelik sahalari etkileyen buyuk iklim grubuna verilen ad", answer: "MAKROİKLİM" },      { clue: "Ekvatoral bölgede gorulen yağış tipi", answer: "KONVEKTİF" },      { clue: "Dönenceler civarinda gorulen ve yagisin çok dusuk olduğu iklim tipi", answer: "ÇÖL" },      { clue: "Duzenli yağış rejimi ozelligi tasiyan Orta Kusak iklim tipi", answer: "OKYANUSAL" },      { clue: "Iliman okyanusal iklimde yagislarin en fazla goruldugu mevsim", answer: "KIŞ" },      { clue: "Çöl ikliminde gorulen kurakliga dayanikli bitki turu", answer: "KAKTÜS" },      { clue: "Akdeniz ikliminde kızılçamlarin tahribi sonucu ortaya çıkan bitki örtüsü", answer: "MAKI" }    ],
+    down: [
+      { clue: "Büyük iklim kuşakları arasında yer alan özel iklim alanları", answer: "GEÇİŞİKLİMİ" },      { clue: "Yazin buzlarin eridigi alanlarda ortaya çıkan bitki örtüsü", answer: "TUNDRA" },      { clue: "Ekvatoral iklim ile çöl iklimi arasindaki gecis", answer: "SAVAN" },      { clue: "Bitki ortusunun bulunmadigi ve yil boyunca sifirin altinda olan iklim tipi", answer: "KUTUP" },      { clue: "Iklimlerin siniflandirilmasinda kullanilan en önemli unsur", answer: "SICAKLIK" },      { clue: "Igne yaprakli ağaçlar ile yagisin azaldigi iklim tipi", answer: "KARASAL" },      { clue: "Muson ikliminde yaygin olarak gorulen yağış tipi", answer: "OROGRAFİK" }    ]
+  },
+  {
+    title: "İç Kuvvetler & Yer Kabuğu",
+    across: [
+      { clue: "Basınç, yoğunluk ve sicakligin en fazla olduğu yer katmani", answer: "ÇEKİRDEK" },      { clue: "Alp kivrimlarini oluşturan tortullarin biriktigi dönem", answer: "MEZOZOYİK" },      { clue: "Kıtalar ve okyanuslarinin altinda yer alan yer kabugu parcalari", answer: "LEVHA" },      { clue: "Yerkurenin en ince tabakasi", answer: "YERKABUĞU" },      { clue: "Bilesiminde silisyum ve alüminyumun bulundugu yer kabugu katmani", answer: "SIAL" },      { clue: "Kıtalarin bir araya gelmesi ile oluşan super kıta", answer: "PANGEA" },      { clue: "Birinci jeolojik zamanda olusmis enerji kaynagi", answer: "TAŞKÖMÜRÜ" }    ],
+    down: [
+      { clue: "Levhalarin birbirine göre ters yonde hareket ettigi sınır", answer: "UZAKLAŞAN" },      { clue: "Iç kuvvetlerin enerjilerini aldigi katman", answer: "ASTENOSFER" },      { clue: "Kıtalarin kayma fikrini ortaya atan bilim adami", answer: "WEGENER" },      { clue: "Mesozoik donemini karakterize eden canli", answer: "DİNOZOR" },      { clue: "Insanin ortaya ciktigi jeolojik dönem", answer: "KUVATERNER" },      { clue: "Sivi haldeki manto malzemesi", answer: "MAGMA" }    ]
+  },
+  {
+    title: "Depremler & Volkanizm",
+    across: [
+      { clue: "Yer kabugunda doğal nedenlerle oluşan salinim ve titresim hareketleri", answer: "DEPREM" },      { clue: "Denizin karalar uzerinden cekilmesi", answer: "REGRESYON" },      { clue: "Denizin karalar üzerinde ilerlemesi", answer: "TRANSGRESYON" },      { clue: "Volkan koni üzerinde oluşan cukurluk", answer: "KRATER" },      { clue: "Magmanin yer kabugununzayif sahalarindan patlamasi olayi", answer: "VOLKANİZMA" },      { clue: "Tabakalar arasina duvar gibi sokulan iç puskurukler", answer: "DAYK" },      { clue: "Depremlerin neden olduğu dev dalgalar", answer: "TSUNAMI" },      { clue: "Yer kabugunda bulunan kirik hatlari", answer: "FAY" }    ],
+    down: [
+      { clue: "Faylar boyunca coken kisimlar", answer: "GRABEN" },      { clue: "Tortul tabakalarin kirilma hareketleriyle yukselmesi olayi", answer: "OROJENEZ" },      { clue: "Izostatik dengeye bagli yer kabugunda toptan alcalma ya da yukselme", answer: "EPİROJENEZ" },      { clue: "Kivrim hareketleri sırasında coken bolumler", answer: "SENKLİNAL" },      { clue: "Gerilme kuvvetine bagli olarak oluşan fay", answer: "NORMAL" },      { clue: "Kivrim hareketleri sırasında yükselen bolumler", answer: "ANTİKLİNAL" }    ]
+  },
+  {
+    title: "Dış Kuvvetler - Akarsular",
+    across: [
+      { clue: "Akarsu asindirmasinin son doneminde ortaya çıkan genis duzlukler", answer: "PENEPLEN" },      { clue: "Dış kuvvetlerin etkisiyle kayalarin ufalanip dagilmasi", answer: "UFALANMA" },      { clue: "Akarsuyun birim zamanda gecen suyun m3/sn cinsinden miktari", answer: "DEBI" },      { clue: "Akarsuyun yataginda oluşturdugu S harfi seklindeki buklumler", answer: "MENDERES" },      { clue: "Bitki ortusunden yoksun yamaclarin sel sulariyla parcalanmasi", answer: "BADLANDS" },      { clue: "Sularini denize ulastirabilenakarsuların havzasi", answer: "AÇIK" }    ],
+    down: [
+      { clue: "Akarsu cigirlarinda gorulen V sekilli tabansiz vadiler", answer: "KANYON" },      { clue: "Akarsu yataklarinda dikliklerden dusmeleriyle oluşan şekil", answer: "ŞELALE" },      { clue: "Topragin ve taslarin asagilara doğru kaymasi", answer: "HEYELAN" },      { clue: "Bir akarsu havzasini komsu havzadan ayiran sınır", answer: "SUBÖLÜMÇİZGİSİ" },      { clue: "Taslarin kimyasal yapilari degismeden meydana gelen cozulme", answer: "FİZİKSEL" },      { clue: "Akarsu vadileriyle derince parcalanmis yüksek duzlukler", answer: "PLATO" },      { clue: "Akarsu dustukleri yerde actiklari cukurluklar", answer: "DEVKAZANI" },      { clue: "Akarsu alüvyonlariyla kıyı kesiminde oluşan ovalar", answer: "DELTA" }    ]
+  },
+  {
+    title: "Dış Kuvvetler - Buzul, Rüzgar & Kıyı",
+    across: [
+      { clue: "Dik kiyilarin alti oyulmasiyla kıyıda meydana gelen diklik", answer: "FALEZ" },      { clue: "Karstik arazilerde yer altinda oluşan buyuk boşluklar", answer: "MAĞARA" },      { clue: "Kıyı setlerinin bir burundan ileriye uzanmasiyla oluşan şekil", answer: "TOMBOLO" },      { clue: "Mağara tavanindan damlayan sularin tavanda biriktigiyle oluşan şekil", answer: "SARKİT" },      { clue: "Mağara tavanlarinin cokmesiyle oluşan kuyu seklinde cukurluklar", answer: "OBRUK" },      { clue: "Ruzgarlarin farkli direncteki kayalari farkli asindirmasiyla oluşan şekil", answer: "MANTARKAYA" },      { clue: "Genisleyen birkac dolinin birlesmeisle oluşan buyuk cukurluklar", answer: "UVALA" },      { clue: "Orta Asya collerinde oluşan hilal bicimli kumullar", answer: "BARKAN" }    ],
+    down: [
+      { clue: "Buzul vadilerinin sular altında kalmasiyla oluşan kıyılar", answer: "FİYORD" },      { clue: "Yil boyunca dusuk sicakliktan dolayi erimeden kalan buz", answer: "BUZUL" },      { clue: "Ruzgarlarin tasidigi kumlarin biriktirilmesiyle oluşan kum ortuleri", answer: "ERG" },      { clue: "Kıyı acigindaki adanin kıyı oku ile karaya baglanmasiyla oluşan şekil", answer: "TOMBOLO" },      { clue: "Kıyı okunun kor ya da korfezin onunu kapatmasiyla oluşan goller", answer: "LAGUN" },      { clue: "Kiyiya paralel uzanan dağlar arasindaki vadilerin su altinda kalmasi", answer: "DALMACYA" },      { clue: "Daglarin yüksek kesimlerinde buzulun basladigi asinimcukurlugu", answer: "SIRK" }    ]
+  },
+  {
+    title: "Yerleşme Tipleri",
+    across: [
+      { clue: "Dünyanın en soguk kenti", answer: "YAKUTSK" },      { clue: "Akarsu boylarinda veya bir yol boyunca kurulan yerlesmeler", answer: "YOLYERLEŞMESİ" },      { clue: "Yağış miktarinin fazla su kaynaklarinin bol olduğu daginikyerlesme", answer: "DAĞINIKYERLEŞME" },      { clue: "Ilkel yerlesim alani", answer: "MAĞARA" },      { clue: "Dicle ve Firat nehirlerinin arasindaki alan", answer: "MEZOPOTAMYA" },      { clue: "Insanlarin gecimini tarim ve hayvanciliktan sagladigi nüfusu az yerlesmeler", answer: "KOY" },      { clue: "Ilk koylerin ortaya ciktigi dönem", answer: "NEOLİTİK" }    ],
+    down: [
+      { clue: "Nüfus artisi dagilisi göç hareketleri gibi nüfus ozelliklerini inceleyen dal", answer: "NÜFUSCOĞRAFYASI" },      { clue: "Dünyanın en yuksekte kurulan baskenti", answer: "LAPAZ" },      { clue: "Dünyanın en kuzeyde kurulan kenti", answer: "HAMMERFEST" },      { clue: "Kurak bolgelerde yapilan ev sekli", answer: "TOPRAK" },      { clue: "Nüfusu 10.000'den fazla olan yerlesmeler", answer: "SEHIR" },      { clue: "Birkac ev ile eklentilerinden oluşan kucuk yerlesme şekilleri", answer: "MEZRA" },      { clue: "Köy ile kent arasinda gecis ozelligi gosteren yerlesmeler", answer: "KASABA" }    ]
+  },
+  {
+    title: "Bölgeler",
+    across: [
+      { clue: "Asya'nin yoğun olarak petrol cikartilan bati kesimi", answer: "ORTADOĞU" },      { clue: "Kuzey Amerika Ekonomik Is Birligi Orgutu", answer: "NAFTA" },      { clue: "Ayni kültür potasi icerisinde bulunan ulkelerin oluşturdugu bölge", answer: "KÜLTÜRBÖLGE" },      { clue: "Doğal bolgelere göre sinirlari zamanla daha kolay degisebilen bölge turu", answer: "BEŞERİ" },      { clue: "Avrupa'nin yoğun göç alan kesimi", answer: "BATIAVRUPA" }    ],
+    down: [
+      { clue: "Yer şekilleri iklim ya da toprak ozelliklerine göre ayrilan bölgeler", answer: "DOĞALBÖLGE" },      { clue: "1934 yilinda Turkiye, Yunanistan, Yugoslavya ve Romanya arasinda kurulan bölge", answer: "BALKANPAKTI" },      { clue: "Yer şekilleri iklim ve bitki örtüsü gibi ozelliklerle butunluk gosteren alanlar", answer: "COĞRAFİBÖLGE" },      { clue: "Sanayi bölgesi içinde yer alan bir Asya ulkesi", answer: "JAPONYA" },      { clue: "Kuzey Atlantik Anlasma Orgutu", answer: "NATO" }    ]
+  },
+  {
+    title: "Çevre Kirliliği & Koruma",
+    across: [
+      { clue: "Nükleer enerji santralleri ve nükleer silah üreten fabrikaların artıkları", answer: "RADYOAKTİF" },      { clue: "Enerji ihtiyacı için kullanılan sıvı halde bulunan fosil yakıt", answer: "PETROL" },      { clue: "Canlı yaşamını olumsuz etkileyen her türlü insan hayvan ya da makine kaynaklı ses", answer: "GÜRÜLTÜ" },      { clue: "Yaşanılan alanlarda elektrikle çalışan cihazların neden olduğu kirlilik", answer: "ELEKTROMANYETİK" },      { clue: "İstenmeyen zararlı maddelerin suya karışması", answer: "SUKİRLİLİĞİ" },      { clue: "Yangınlar hayvan otlatma tarla açma ve odun ihtiyacının karşılanması sonucu orman zararı", answer: "ORMANTAHRİP" }    ],
+    down: [
+      { clue: "Hava kirliligine neden olan karbon bilesikli yakitlar", answer: "FOSİL" },      { clue: "Hava toprak ve suya karisan yabanci maddelerin olumsuz etkisi", answer: "KİRLİLİK" },      { clue: "Uc oksijen atomundan oluşan ve Güneş'ten gelen ultraviyole isinlari suzen gaz", answer: "OZON" },      { clue: "1986 yilinda Ukrayna'da patlayan nukleer santral", answer: "ÇERNOBİL" },      { clue: "Eskimolarin sikistirilmis kar ve buzdan yaptiklari meskenler", answer: "İGLO" },      { clue: "Evlerden ya da sanayi tesislerinden kaynaklanan metal plastik kagit gibi maddeler", answer: "ATIK" }    ]
+  },
+  {
+    title: "Doğal Afetler & Ekstrem Olaylar",
+    across: [
+      { clue: "Akdenizi Atlas Okyanusuna baglayan boğaz", answer: "CEBELİTARIK" },      { clue: "Klimatolojik kuraklik tehlikesinin en az olacagi ulkelerden biri", answer: "NORVEC" },      { clue: "Kis turizminin en gelistigi ulkelerden biri", answer: "İSVİÇRE" },      { clue: "Ingiltere ve Fransa'yi deniz altindan birbirine baglayan tunel", answer: "MANŞTÜNELI" },      { clue: "Hizi 120 km/saatten daha fazla olan tropikal rüzgarlar", answer: "KASIRGA" },      { clue: "Suya doygun ve kaygan kil tabakasininneden olduğu olay", answer: "HEYELAN" },      { clue: "Endonezya'da super volkan yonunden en riskli bolgelerden biri", answer: "SUMATRA" },      { clue: "Jura daglarinin bulundugu ülke", answer: "FRANSA" },      { clue: "Dünyada kaydedilen en dusuk sicakligin yasandigi ülke", answer: "RUSYA" },      { clue: "Rotterdam Limani hangi ulkededir", answer: "HOLLANDA" }    ],
+    down: [
+      { clue: "Turkiye'de deprem riskinin dusuk olduğu sehirlerden biri", answer: "KARAMAN" },      { clue: "26 Aralik 2004'te Endonezya cevresinde yaşanan 21. yuzyilin en şiddetli ekstremolayi", answer: "TSUNAMI" },      { clue: "Dünyanın en buyuk su taşıma projesine sahip ülke", answer: "ÇİN" },      { clue: "Heyelan sonucu olusmis gollerimizden biri", answer: "TORTUM" },      { clue: "Klimatolojik karakterli ekstrem olaylardan biri", answer: "KURAKLIK" },      { clue: "1201 yilinda bilinen en şiddetli depremin yasandigi ülke", answer: "MISIR" },      { clue: "Isvicre yuz olcumunun yarindan fazlasini kaplayan dağlar", answer: "ALPLER" },      { clue: "Depremden en çok etkilenen kıta", answer: "ASYA" }    ]
+  },
+  {
+    title: "İlk Çağ Uygarlıkları",
+    across: [
+      { clue: "Mezopotamya'da kurulan en eski uygarliklardan biri", answer: "SUMER" },      { clue: "Meksika'da hukum surmus olan medeniyet", answer: "AZTEK" },      { clue: "Cin uygarligina ait teknik icatlardan biri", answer: "BARUT" },      { clue: "Tarihte sifir kavramini bulan uygarlik", answer: "HİNT" },      { clue: "Hint uygarliginin yayildigi gunumuz ulkelerinden biri", answer: "PAKİSTAN" },      { clue: "Orta Amerika'da kurulmus olan medeniyetlerden biri", answer: "MAYA" },      { clue: "Afrika kıtasinin kuzeydogusunda kurulmus uygarlik", answer: "MISIR" },      { clue: "Kral yolu olarak bilinen ticaret yolunu yapmis uygarlik", answer: "PERS" },      { clue: "Cin uygarliginin olusumunda etkili olan bir akarsu", answer: "HUANGHO" },      { clue: "Güneş takvimini Julyen takvimi olarak duzenleyen uygarlik", answer: "ROMA" },      { clue: "Mezopotamya medeniyetine katkisi olan irmaklardan biri", answer: "DICLE" }    ],
+    down: [
+      { clue: "Yunanca'da iki nehir arasi anlamina gelen kelime", answer: "MEZOPOTAMYA" },      { clue: "Fenikelilerin kültür alaninda yaptiklari önemli bir katki", answer: "ALFABE" },      { clue: "Tanrilar adina olimpiyat oyunlarini ilk kez baslatan uygarlik", answer: "YUNAN" },      { clue: "Ilk medeniyetlerin daha çok orta enlemlerde yer almasinda etkili faktor", answer: "İKLİM" },      { clue: "Hint uygarliginin ortaya cikmasinda etkili olan bir akarsu", answer: "İNDUS" },      { clue: "Dünyanın yuvarlak olduğunu ilk kez ileri suren Iyonyali dusunur", answer: "TALES" },      { clue: "Güney Amerika'da kurulmus bir medeniyet", answer: "INKA" },      { clue: "Lidyalilarin ticaret alanina yaptiklari en önemli katki", answer: "PARA" },      { clue: "Hint uygarliginda halki sosyal katmanlara bolmus olan sistem", answer: "KAST" }    ]
+  },
+  {
+    title: "Kentleşme & Sanayi",
+    across: [
+      { clue: "Gunumuz ekonomisindeki makinelerin yerini almasi beklenen teknoloji", answer: "ROBOTİK" },      { clue: "Gunumuz uluslarinin ustunluk mucadelesi verdigi en önemli alan", answer: "TEKNOLOJİ" },      { clue: "Göç dalgasi yaratacak hizli sehirlesmeyi tesvik eden gelisme", answer: "SANAYİLEŞME" },      { clue: "Ruhr Havzasinin en önemli enerji kaynagi", answer: "KÖMÜR" },      { clue: "Gunumuzde sehirlesme orani çok dusuk olan kıtalardan biri", answer: "AFRIKA" },      { clue: "Gunumuzdeki Ruhr Havzasinda faaliyet yuruten bir sektor", answer: "HİZMET" },      { clue: "Almanyanin en önemli sanayi bölgesi", answer: "RUHR" },      { clue: "Ruhr Bolgesindeki önemli sehirlerden biri", answer: "ESSEN" }    ],
+    down: [
+      { clue: "Sehirlerin cevresinde mekansal kültürel veya etnik olarak soyutlanmis semtler", answer: "GETTO" },      { clue: "Banglades'in en kalabalik sehirlerinden biri", answer: "DAKKA" },      { clue: "Ilk şehir yerlesmelerinin ortaya ciktigi medeniyet", answer: "SÜMER" },      { clue: "Gunumuz sehirlesme orani yuzde yüze ulasan ülke", answer: "SİNGAPUR" },      { clue: "Kentlesme sürecinin buyuyup birlesmeisle ortaya çıkan genis sehirsel alan", answer: "MEGALOPOLİS" },      { clue: "Gunumuzde sehirlesme hizinin en yavas olduğu kıtalardan biri", answer: "AVRUPA" }    ]
+  },
+  {
+    title: "Türkiye Bölgeleri",
+    across: [
+      { clue: "Akdeniz kiyisindaki delta ovalarindan biri", answer: "ÇUKUROVA" },      { clue: "Ekonomik planlama bolgelerini belirleyen cografi ozelliklerin ortak adi", answer: "COĞRAFİBÖLGE" },      { clue: "Bati Karadeniz'de yer alan maden sanayi bolgesine ornek merkez", answer: "ZONGULDAK" },      { clue: "Bölge sinirlarini belirleyen unsurlardan sabit degismeyen unsurlarin ortak adi", answer: "DOGAL" },      { clue: "Gaziantep ile Mardin arasinda uzanan tarim bölgesi", answer: "HARRAN" },      { clue: "Orta Karadeniz kiyilarindaki serbest ticaret bölgesi", answer: "SAMSUN" },      { clue: "Istanbul ile Sakarya arasinda yer alan sanayi bölgesi", answer: "MARMARA" },      { clue: "Güney Marmara'da yer alan ticaret turizm tarim ve sanayi merkezi", answer: "BURSA" },      { clue: "Turkiye'de bölge cesitliligi en fazla olan mekan", answer: "EGE" },      { clue: "Sirnak'in doğusunda yer alan seyrek nufuslu bölge", answer: "HAKKARI" },      { clue: "Temel gecim kaynagi tarim ve hayvancilik olan yerlesim bölgesi", answer: "KIRSAL" }    ],
+    down: [
+      { clue: "Kuzeydogu Anadolu'daki kis turizmi bolgelerinden biri", answer: "SARIKAMIŞ" },      { clue: "Turkiye'deki bitki ortusune göre bolgelerin genisi", answer: "ORMAN" },      { clue: "Iklim ozelliklerine göre belirlenen bolgelerimizden en dar olani", answer: "KARADENİZ" },      { clue: "Sıcak su bolgesinin ortaya ciktigi yer yapisindaki kiriklar", answer: "FAY" },      { clue: "Birden fazla gelir kaynagina sahip ekonomik faaliyet cesitliligi gosteren bölge turu", answer: "ÇOKFONKSİYONLU" },      { clue: "Cografi birlik esasina dayanan kendi içinde benzerlikler gosteren mekan", answer: "BÖLGE" },      { clue: "Akdeniz kiyilarindaki en genis delta ovasi bölgesi", answer: "ANTALYA" }    ]
+  },
+  {
+    title: "Ticaret & Ulaşım",
+    across: [
+      { clue: "Kara sinirimiz bulunan komsularimiz icerisinde en fazla ithalat yaptığımiz ülke", answer: "RUSYA" },      { clue: "Turkiye'de ilk halin acildigi il", answer: "İSTANBUL" },      { clue: "Ticareti etkileyen unsurlardan biri", answer: "ULAŞIM" },      { clue: "Turkiye'de gemi yapim sanayisinin gelistigi bir merkez", answer: "TUZLA" },      { clue: "Ulaşım üzerinde etkili olan bir doğal faktor", answer: "YERŞEKİLLERİ" },      { clue: "Yaygin olan ticaret mekanlarindan biri", answer: "PAZAR" },      { clue: "Turkiye'nin dış ticaretinde ilk sirada yer alan uluslararasi topluluk", answer: "AB" },      { clue: "Selcuklular ve Osmanlilar doneminde ticareti canlandirmak için yapilan yapilar", answer: "KERVANSARAY" },      { clue: "Trakya'da ticareti canlandirma tarim urunlerinden biri", answer: "AYÇİÇEĞİ" },      { clue: "Turkiye'de kara ve demir yollarinin genel uzanis yonu", answer: "DOĞUBATI" },      { clue: "Anadolu'nun gecen tarihi ticaret yollarindan biri", answer: "İPEKYOLU" }    ],
+    down: [
+      { clue: "Bir ülkenin disardan mal almasi", answer: "İTHALAT" },      { clue: "Modern ulaşım sistemlerini gelistiren temel itici güç", answer: "TEKNOLOJİ" },      { clue: "Ticaretin önemli unsurlarindan biri olan arzin diger adi", answer: "SUNU" },      { clue: "Hinterlandi genis limana sahip olan önemli ticaret merkezlerimizden biri", answer: "İZMİR" },      { clue: "Doğu Karadeniz kiyilarinin en islek limani", answer: "TRABZON" },      { clue: "Turkiye ile bağlantıli olan uluslararasi karayolu projelerinden biri", answer: "TEM" },      { clue: "Karayollarinin en önemli kavsak noktasi", answer: "ANKARA" },      { clue: "Ulaşım üzerinde etkili olan bir ekonomik faktor", answer: "SERMAYE" },      { clue: "Turkiye'nin en gelismis ulaşım sistemi", answer: "KARAYOLU" },      { clue: "Bir ülkenin kara sularinda yolcu ve yuk taşıma hakki", answer: "KABOTAJ" }    ]
+  },
+  {
+    title: "Türkiye Turizmi",
+    across: [
+      { clue: "Bacasiz sanayi de denilen sektor", answer: "TURİZM" },      { clue: "Turkiye'nin en çok turist aldigi ülke", answer: "ALMANYA" },      { clue: "Kultepe'nin bulundugu ilimiz", answer: "KAYSERİ" },      { clue: "Marmara'da termal turizm potansiyeli fazla olan bir ilimiz", answer: "BALIKESİR" },      { clue: "Antalya'da kis turizmine elverisli olan bir dağ", answer: "SAKLIKENT" },      { clue: "Turkiye'de deniz turizmi sezonunun en kisa olduğu kiyilarimiz", answer: "KARADENİZ" },      { clue: "Raftinge uygun olan bir akarsuyumuz", answer: "ÇORUH" },      { clue: "Genc volkan konileriyle turist ceken bir yoremiz", answer: "KAPADOKYA" }    ],
+    down: [
+      { clue: "Bir ülkenin turist cekebilme potansiyelini belirleyen erisim olanaklarindan biri", answer: "ULAŞIM" },      { clue: "Tarihi ev mimarisiyle ünlü bir yoremiz", answer: "SAFRANBOLU" },      { clue: "Canakkale'deki ünlü arkeolojik kent", answer: "TRUVA" },      { clue: "Nevsehir'deki bir milli park", answer: "GÖREME" },      { clue: "Tokat'taki ünlü mağara", answer: "BALLICA" },      { clue: "Turkiye'ye turistlerin en çok geldiği ay", answer: "TEMMUZ" },      { clue: "Fay hatlarinin yakinda yaygin olan bir alternatif turizm kaynagi", answer: "TERMAL" }    ]
+  },
+  {
+    title: "Nüfus Politikaları",
+    across: [
+      { clue: "Gecmis yillarin verilerinden yararlanarak gelecekte nüfus tahmin işlemi", answer: "NÜFUSPROJEKSİYONU" },      { clue: "Nüfus projeksiyon yontemlerinden biri", answer: "MATEMATİKSEL" },      { clue: "Turkiye'de nüfus artis hizini azaltici politikalarin basladigi dönem", answer: "ALTMIŞLAR" },      { clue: "Nüfus politikasinin amaclarindan biri kalkinmayi saglamaktir", answer: "DENGELİ" },      { clue: "Turkiye'de en çok nüfus barindiran bölge", answer: "MARMARA" },      { clue: "Nüfus artis hizini dusurucu politika izleyen ulkelerden biri", answer: "ÇİN" },      { clue: "Nüfus projeksiyonlarina veri toplamak amaçıyla arastirma yapilan bir alan", answer: "SAHA" },      { clue: "Sinirlari belli bir alan icerisinde yasayan insan sayisi", answer: "NÜFUS" }    ],
+    down: [
+      { clue: "Ülkenin sosyal ekonomik siyasi ve kültürel yapisina göre nüfus konusunda izlediği yol", answer: "NÜFUSPOLİTİKASI" },      { clue: "II. Bes Yillik Kalkinma Planinda nüfus politikasina gelen kavram", answer: "AİLE" },      { clue: "II. Dünya Savasinda erkeklerin silah altina alinmasina neden olan uygulama", answer: "SEFERBERLİK" },      { clue: "Anne baba ve genellikle 1-2 cocuktan oluşan aile", answer: "ÇEKİRDEK" },      { clue: "Turkiye'de 1985'ten sonra nüfus artis hizinin genel degisme yonu", answer: "AZALMA" },      { clue: "Nufusuna yapisal ozelliklerinden biri", answer: "YAS" }    ]
+  },
+  {
+    title: "Bölgesel Kalkınma Projeleri",
+    across: [
+      { clue: "YHGP kapsamindaki illerden delta ovasina sahip şehir", answer: "SAMSUN" },      { clue: "Daginik yerlesmenin en yaygin olduğu sehirleri kapsayan bölgesel kalkinma projesi", answer: "DOKAP" },      { clue: "Turkiye'de bölgesel kalkinma projeleri hazirlayan kurumun kisa adi", answer: "DPT" },      { clue: "Ataturk Barajinin genis alan kapladigi illerden biri", answer: "ADIYAMAN" },      { clue: "ZBK Projesindeki illerden deniz kıyısı bulunmayani", answer: "ELAZIĞ" },      { clue: "Fizibilite calismalari biten bölgesel kalkinma projelerimizden il sayisi en fazla olani", answer: "DAP" },      { clue: "DAP kapsamindaki illerden en güneyde yer alani", answer: "HAKKARİ" },      { clue: "Turkiye'de sadece DOKAP kapsamindaki illerden bir kacinda yetisen tarim ürünü", answer: "ÇAY" },      { clue: "DAP kapsamindaki illerden en batida olani", answer: "SİVAS" },      { clue: "GAP kapsamindaki hidroelektrik santrallerden elektrik uretimi en fazla olani", answer: "ATATÜRK" }    ],
+    down: [
+      { clue: "GAP kapsamindaki illerden ekonomisi en gelişmiş olani", answer: "GAZİANTEP" },      { clue: "GAP'ta serbest bölge kurulan illerden biri", answer: "MARDİN" },      { clue: "ZBK projesi kapsamindaki akarsulardan tasimaciliga uygun olani", answer: "FIRAT" },      { clue: "ZBK projesinin mevcut sanayi faaliyetlerinden en onemlisi", answer: "MADEN" },      { clue: "YHGP projesine adini veren akarsu", answer: "YEŞİLIRMAK" },      { clue: "ZBK projesindeki illerin en önemli yer alti kaynagi", answer: "KROM" },      { clue: "GAP'in faaliyete gecmesiyle ekim alani daralan tarim ürünü", answer: "PAMUK" },      { clue: "DAP kapsaminda olup da Karadeniz Bolgesine ait illerden biri", answer: "ARTVİN" },      { clue: "YHGP kapsamindaki illerden yuzolcumu en kucuk olani", answer: "AMASYA" }    ]
+  },
+  {
+    title: "Türkiye'nin Jeopolitiği",
+    across: [
+      { clue: "Ugradigi haksizliklarla dünya gundeminde olan bir Orta Doğu ulkesi", answer: "FİLİSTİN" },      { clue: "Turkiye'yi dolayli olarak ilgilendiren bölgesel sorunlardan biri", answer: "SURİYE" },      { clue: "Anadolu topraklari üzerinde ilk caglarda kurulmus bir imparatorluk", answer: "ROMA" },      { clue: "Dünyanın petrol bakimindan en zengin bölgesi", answer: "ORTADOĞU" },      { clue: "Herhangi bir ülkenin cografi konumunun politikaya olan etkisini ifade eden kelime", answer: "JEOPOLİTİK" },      { clue: "Turkiye'nin Rusya Balkanlar ve Kafkasya için onemi fazla olan goreli konum ozelligi", answer: "BOĞAZLAR" },      { clue: "Soguk Savas Doneminde NATO'nun karsisinda yer alan askeri orgut", answer: "VARŞOVAPAKTI" },      { clue: "Kizil Deniz'i Akdeniz'e baglayan su yolu", answer: "SÜVEYŞ" },      { clue: "Bir Balkan ulkesi", answer: "ARNAVUTLUK" }    ],
+    down: [
+      { clue: "Cografi Kesiflerden sonra onemi azalan bir ticaret yolu", answer: "İPEKYOLU" },      { clue: "Firat ve Dicle'nin sulariyla ilgili Turkiye ile sorun yasama riski fazla olan ülke", answer: "IRAK" },      { clue: "Ekonomik Isbirligi ve Kalkinma Teskilatinin kisa adi", answer: "OECD" },      { clue: "Kibris Cumhuriyetinin kurulmasinda etkili olan antlasmalardan biri", answer: "ZÜRİH" },      { clue: "Turkiye'nin kuzeydogu komsusu", answer: "GÜRCİSTAN" },      { clue: "Bosna-Hersek sorunun ilgili ulkelerinden biri", answer: "SIRBISTAN" },      { clue: "Jeopolitikte etkili olan bir unsur", answer: "KONUM" }    ]
+  },
+  {
+    title: "Uluslararası Örgütler & Çatışma Bölgeleri",
+    across: [
+      { clue: "Tarihte 6 Gün Savaşı olarak anılan savaşta İsrail ile savaşan ülke", answer: "MISIR" },      { clue: "Uluslararası barışı ve güvenliği sağlamak amacıyla I. Dünya Savaşından sonra kurulan örgüt", answer: "MİLLETLERCEMİYETİ" },      { clue: "ABD'nin Irak'ı işgal etmesinde önemi en fazla olan doğal kaynak", answer: "PETROL" },      { clue: "Günümüzün en etkin uluslararası çevre örgütü", answer: "GREENPEACE" },      { clue: "Afrika'da paylaşımı ülkeler arasında sorun oluşturan en önemli akarsu", answer: "NIL" },      { clue: "Bir evrensel örgüt", answer: "BM" },      { clue: "Kafkasya'nın gerilimli bölgelerinden biri", answer: "ÇEÇENİSTAN" },      { clue: "IMF'den en fazla oy hakkına sahip olan ülke", answer: "ABD" },      { clue: "BM Güvenlik Konseyinde veto hakkına sahip olan ülkelerden biri", answer: "FRANSA" },      { clue: "Karadeniz Ekonomik İş Birliği Teşkilatına gözlemci olarak katılan bir Afrika ülkesi", answer: "MISIR" },      { clue: "AB'ye 2007 yılında üye olan ülkelerden biri", answer: "BULGARISTAN" }    ],
+    down: [
+      { clue: "KEI'ye sonradan katilan bir ülke", answer: "SIRBISTAN" },      { clue: "Güneydoğu Asya'daki bir catisma ve gerilim bölgesi", answer: "KORE" },      { clue: "OPEC'e yeni ulkelerin uyeligi durumunda veto hakki bulunan ulkelerden biri", answer: "IRAN" },      { clue: "Güney Amerikadaki catisma ve gerilim bölgesi", answer: "KOLOMBİYA" },      { clue: "Ortak parasal birlige gecisi kabul etmeyen bir Avrupa Birligi ulkesi", answer: "İNGİLTERE" },      { clue: "Ekonomik Kalkinma ve Is Birligi Orgutunun kisaltmasi", answer: "OECD" },      { clue: "NAFTA uyesi ulkelerin en güneyde yer alani", answer: "MEKSİKA" },      { clue: "Nukleer enerji santrallerinde yakit olarak kullanilan doğal kaynak", answer: "URANYUM" }    ]
+  },
+  {
+    title: "Çevre Sorunları & Doğal Kaynaklar",
+    across: [
+      { clue: "Turkiye'de erezyonu önlemek amacıyla 1988 yılında başlatılan agaclandirma projesi", answer: "TEMA" },      { clue: "Kullanildikca rezerv miktari azalan yenilenemeyendogal kaynaklar", answer: "TÜKENEN" },      { clue: "Dünyada ilk CED uygulamasini baslatan ülke", answer: "ABD" },      { clue: "Ozon tabakasinin incelmesine en çok etki eden gaz", answer: "CFC" },      { clue: "1996 yilinda Habitat 2 Konferansinin yapildigi şehir", answer: "İSTANBUL" },      { clue: "Depremlerin en etkili olduğu kıta", answer: "ASYA" },      { clue: "Ekosisteme zarar vermeyen enerji kaynaklarindan biri", answer: "RUZGAR" },      { clue: "Ekinler bicildikten sonra tarlada kalan kok ve sap kismina verilen ad", answer: "ANIZ" },      { clue: "Yasamin temel unsurlarindan olan doğal kaynaklardan biri", answer: "SU" }    ],
+    down: [
+      { clue: "Denizel ortamda karbon dongusunun yasandigi alan", answer: "OKYANUS" },      { clue: "Kuraklik riski fazla olan bir Asya ulkesi", answer: "HİNDİSTAN" },      { clue: "Kyoto Protokolunun imzalandigi ülke", answer: "JAPONYA" },      { clue: "Gelisme hizi çok fazla olan bir doğal afet", answer: "DEPREM" },      { clue: "Adiyaman ilindeki milli park", answer: "NEMRUT" },      { clue: "Güney Marmara'da bulunan Avrupa ve Orta Doğu'nun en önemli sulak alanlarindan biri", answer: "MANYAS" },      { clue: "Dünyanın doğal miraslarindan biri olan Demavad Daginin bulundugu ülke", answer: "IRAN" }    ]
+  },
+  {
+    title: "Nüfus",
+    across: [
+      { clue: "Nüfusun yapısal özelliklerinden biri", answer: "YAŞ" },
+      { clue: "İlk modern periyodik nüfus sayımı yapan ülkelerin bulunduğu bölgenin adı", answer: "AVRUPA" },
+      { clue: "Nüfusu en çok olan ülke", answer: "HİNDİSTAN" },
+      { clue: "Nüfus bilimi", answer: "DEMOGRAFİ" },
+      { clue: "Nüfus dağılışı üzerinde etkili olan faktörlerden biri", answer: "İKLİM" },
+      { clue: "Nüfus dağılışı üzerinde son yüzyıl içinde belirleyici özellik kazanmış ekonomik faaliyet", answer: "SANAYİ" },
+      { clue: "Nüfus patlamasına neden olan Neolitik Çağda başlayan ekonomik faaliyet", answer: "TARIM" }
+    ],
+    down: [
+      { clue: "Nüfus artışı üzerinde en büyük sıçramaya neden olan olay", answer: "DEVRİM" },
+      { clue: "Nüfus artış oranı yüksek olan körfez ülkelerinden biri", answer: "KATAR" },
+      { clue: "Belli bir sınır içinde belirli anda belirlenen insan sayısı", answer: "NÜFUS" },
+      { clue: "Dünyada nüfusun seyrek olduğu alanlardan biri olup dünyanın en büyük çölüdür", answer: "SAHRA" },
+      { clue: "Nüfus ve nüfusun niteliklerini belirlemek için yapılan çalışma", answer: "SAYIM" },
+      { clue: "Genellikle 15 yaş altı ile 65 yaş üstü nüfus için kullanılan terim", answer: "BAĞIMLI" },
+      { clue: "Osmanlı Döneminde ilk nüfus sayımını yaptıran padişah", answer: "MAHMUT" },
+      { clue: "Nüfus yoğunluğu az olan Okyanusya'nın en büyük adası", answer: "AVUSTRALYA" }
+    ]
+  },
+  {
+    title: "Su Kaynakları",
+    across: [
+      { clue: "Yeryüzündeki suların büyük kısmını bulunduran çok büyük su kütleleri", answer: "OKYANUSLAR" },
+      { clue: "Suların açık denizlere gönderemediği kapalı havza alanları", answer: "KAPALI" },
+      { clue: "Kimi özellikleriyle deniz olarak adlandırılan dünyanın en büyük gölü", answer: "HAZAR" },
+      { clue: "Sahra Çölü'nün güneyinde yıl içinde düzey değişiklikleri gösteren göl", answer: "ÇAD" },
+      { clue: "Yer altı suyunu tutan ve ileten gözenekli toprak katmanı", answer: "AKİFER" },
+      { clue: "Buzul aşındırması sonucu oluşan çukurlarda biriken su ile oluşan göl türü", answer: "SİRK" },
+      { clue: "Dünyanın en yüksek şelalesi", answer: "ANGEL" },
+      { clue: "Denizlerin karaların içine girdiği bölüm", answer: "KÖRFEZ" },
+      { clue: "Afrika kıtasının en büyük akarsuyu", answer: "NİL" }
+    ],
+    down: [
+      { clue: "Yer altı suyunun sondaj yoluyla yeryüzüne çıkarılması", answer: "ARTEZYEN" },
+      { clue: "Yeryüzündeki suların bir yatak içinde eğim boyunca akması", answer: "AKARSU" },
+      { clue: "İki denizi birbirine bağlayan doğal su yolu", answer: "BOĞAZ" },
+      { clue: "Akarsuyun yıl boyunca gösterdiği akış değişimi", answer: "REJİM" },
+      { clue: "Kutuplarda ve yüksek dağlık alanlarda katı hâlde bulunan su kütleleri", answer: "BUZUL" },
+      { clue: "Koy ya da körfez önünün kıyı kordonuyla kapanması sonucu oluşan göl", answer: "LAGÜN" },
+      { clue: "Dünyanın en derin ve en yaşlı göllerinden biri", answer: "BAYKAL" },
+      { clue: "Akarsularla su toplama alanlarının adı", answer: "HAVZA" }
+    ]
+  },
+  {
+    title: "Toprak Türleri",
+    across: [
+      { clue: "Akdeniz iklim bölgesinde kalkerli arazide oluşan toprak", answer: "TERRAROSSA" },
+      { clue: "Ekvatoral bölge toprağı", answer: "LATERİT" },
+      { clue: "Ilıman karasal iklim bölgesi toprağı", answer: "ESMER" },
+      { clue: "Akarsularla taşıyıp biriktirdiği topraklar", answer: "ALÜVYAL" }
+    ],
+    down: [
+      { clue: "Soğuk ve nemli bölge toprağıdır. Kanada ve Sibirya'da geniş yer kaplar", answer: "PODZOL" },
+      { clue: "Taban suyu seviyesinin yüzeye yakın olduğu yerlerde görülen intrazonal topraklar", answer: "HİDROMORFİK" },
+      { clue: "Rüzgârın taşıyıp biriktirdiği topraklardır", answer: "LÖS" },
+      { clue: "Karasal iklim bölgesinde çayır bitki örtüsü altında oluşan zonal toprakların en verimlisi", answer: "ÇERNOZYOM" },
+      { clue: "Dönen topraklar olarak da bilinen intrazonal toprak", answer: "VERTİZOL" }
+    ]
+  },
+  {
+    title: "Harita Bilgisi",
+    across: [
+      { clue: "Akarsu yatağı", answer: "VADI" },
+      { clue: "Haritalardaki küçültme oranı", answer: "ÖLÇEK" },
+      { clue: "Orta kuşağı göstermede en uygun projeksiyon yöntemi", answer: "KONİK" },
+      { clue: "Yeryüzünün bir kısmının kuş bakışı olarak ölçekle düzleme aktarılması", answer: "HARİTA" },
+      { clue: "Daha çok tercih edilen ölçek türü", answer: "KESİR" },
+      { clue: "Yüksek düzlük", answer: "PLATO" },
+      { clue: "İzohips haritalarında nokta veya üçgenle gösterilen yer", answer: "ZİRVE" },
+      { clue: "Haritaya aktarılan alan", answer: "ARAZİ" },
+      { clue: "Coğrafi verilerin toplanması, depolanması ve analiz edilmesi", answer: "CBS" },
+      { clue: "Yüksek kıyılarda dalga aşındırmasıyla oluşan şekil", answer: "FALEZ" },
+      { clue: "Haritalarda sembolleri gösteren bölüm", answer: "LEJAND" }
+    ],
+    down: [
+      { clue: "Akarsuyun denize döküldüğü yerde oluşturduğu ova", answer: "DELTA" },
+      { clue: "Fiziki haritalarda alçak yerleri gösteren renk", answer: "YEŞİL" },
+      { clue: "Yeryüzü şekillerini göstermede en çok tercih edilen yöntem", answer: "İZOHİPS" },
+      { clue: "En büyük ölçekli harita türü", answer: "KADASTRO" },
+      { clue: "Ünlü Türk denizcisi", answer: "PİRİ" },
+      { clue: "Doğal ve beşeri unsurların bir arada gösterildiği harita", answer: "GENEL" },
+      { clue: "Dar alanların gösterildiğinde kullanılan projeksiyon türü", answer: "KONİK" },
+      { clue: "Gerçeğe en yakın çizim yöntemi", answer: "KÜRE" }
+    ]
+  },
+  {
+    title: "İç Kuvvetler",
+    across: [
+      { clue: "Dağ oluşumuna verilen ad", answer: "OROJENEZ" },
+      { clue: "Dağ oluşumu sırasında kırılan tabakaların dikey yönde yer değiştirmesiyle oluşan yükseltiler", answer: "HORST" },
+      { clue: "Kara kütlesinin hafifleyip yükselmesiyle deniz seviyesinin geri çekilmesi", answer: "İZOSTAZİ" },
+      { clue: "Kıvrılan tabakaların yükselen kubbe şeklindeki kısımları", answer: "ANTİKLİNAL" },
+      { clue: "Magmadan yeryüzüne gelen gazların patlaması sonucu oluşan çukur", answer: "MAAR" },
+      { clue: "Kara kütlelerinin bir bütün olarak yükselmesi ya da alçalması", answer: "EPİROJENEZ" },
+      { clue: "Yeni bir patlama ya da çökme sonucu kraterin genişlemesiyle oluşan çanaklar", answer: "KALDERA" },
+      { clue: "Magmanın tabakaları keserek damar şeklinde katılaşmasıyla oluşan şekil", answer: "DAYK" }
+    ],
+    down: [
+      { clue: "Deprem tehlikesi fazla olan Asya ülkelerinden biri", answer: "JAPONYA" },
+      { clue: "Magmanın damar aracılığıyla tabakalar arasına sokulmasıyla oluşan mantar biçimli şekil", answer: "LAKOLİT" },
+      { clue: "Dünyadaki volkanların yaklaşık dörtte üçünün görüldüğü bölge", answer: "ATEŞÇEMBERİ" },
+      { clue: "Magmanın yeryüzüne çıkması ya da yeryüzüne kadar sokulması", answer: "VOLKANİZMA" },
+      { clue: "Akdeniz-Himalaya Deprem Kuşağında yer alan ülkelerden biri", answer: "TÜRKİYE" },
+      { clue: "Levha hareketleriyle meydana gelen yer değiştirme ve kırılma sonucu oluşan deprem türü", answer: "TEKTONİK" },
+      { clue: "Volkan konilerinin üst kesiminde patlama sonucu oluşan çukurlar", answer: "KRATER" },
+      { clue: "Yer kabuğu hareketleri sırasında meydana gelen kırıklar", answer: "FAY" }
+    ]
+  },
+  {
+    title: "İklim Bilgisi",
+    across: [
+      { clue: "Kısa süreli hava olayları", answer: "HAVA" },
+      { clue: "Ege kıyılarında deniz melteminin halk arasındaki ismi", answer: "İMBAT" },
+      { clue: "Anadolu'da yükselim yağışlarına verilen isim", answer: "KIRKİKİNDİ" },
+      { clue: "Rüzgârın hızını ve yönünü ölçen alet", answer: "ANEMOMETRE" },
+      { clue: "Basınç deneyini yapan İtalyan bilim insanı", answer: "TORİÇELLİ" },
+      { clue: "Basınçölçer", answer: "BAROMETRE" },
+      { clue: "Atmosfer basıncının birimi", answer: "MİLİBAR" },
+      { clue: "Kışın ılık ve yağışlı, yazın sıcak ve kurak olan iklim", answer: "AKDENİZ" },
+      { clue: "Ülkemize güneybatıdan esen sıcak rüzgâr", answer: "LODOS" },
+      { clue: "İklim olaylarına neden olan gaz", answer: "SU BUHARI" },
+      { clue: "Küresel ısınmaya neden olan gazlardan biri", answer: "METAN" },
+      { clue: "Sıcak kuru rüzgârlardan biri", answer: "SAMYELİ" },
+      { clue: "Meridyenlerin en sıcak noktalarını birleştiren çizgi", answer: "TERMİK EKVATOR" }
+    ],
+    down: [
+      { clue: "Bitki örtüsünün olmadığı iklim", answer: "KUTUP" },
+      { clue: "Orta kuşak karalarının batı kıyılarına yağış getiren sürekli rüzgâr", answer: "BATI RÜZGARLARI" },
+      { clue: "Canlı yaşamının olduğu atmosfer katmanı", answer: "TROPOSFER" },
+      { clue: "Ülkemize kışın kutup şartlarını getiren termik yüksek basıncı", answer: "SİBİRYA" },
+      { clue: "Sıcaklıkölçer", answer: "TERMOMETRE" },
+      { clue: "Ticaret rüzgârları", answer: "ALİZE" },
+      { clue: "Güneydoğu Asya'da etkili olan mevsimlik rüzgâr", answer: "MUSON" },
+      { clue: "Eş sıcaklık eğrisi", answer: "İZOTERM" },
+      { clue: "Bir merkezde rüzgârın en çok estiği yön", answer: "HAKİM" },
+      { clue: "Hava olaylarının uzun süreli ortalaması", answer: "İKLİM" },
+      { clue: "Don olayının en fazla görüldüğü illerimizden biri", answer: "KARS" },
+      { clue: "Dünya'yı saran gaz kütlesi", answer: "ATMOSFER" },
+      { clue: "Her mevsim yağışlı ve sıcak iklim", answer: "EKVATOR" },
+      { clue: "Farklı özellikteki hava kütlelerinin karşılaşma alanı", answer: "CEPHE" },
+      { clue: "Güneş'ten gelen zararlı ışınları süzen atmosfer katmanı", answer: "OZON" },
+      { clue: "Mutlak nemin maksimum neme oranı", answer: "BAĞIL" },
+      { clue: "Yağışın en çok düştüğü ilimiz", answer: "RİZE" },
+      { clue: "Atmosferde oranı en fazla olan gaz", answer: "AZOT" }
+    ]
+  },
+  {
+    title: "Kayaçlar",
+    across: [
+      { clue: "Magmanın yüzeye çıkıp soğumasıyla oluşan kayaç türü", answer: "VOLKANİK" },
+      { clue: "Tortul kütleler arasında kalan hayvan ve bitki kalıntılarının taşlaşmış hali", answer: "FOSİL" },
+      { clue: "İnce paralel yaprak şeklinde kolayca ayrılabilen plakaları olan kristalli kayaç", answer: "ŞİST" },
+      { clue: "Yer kabuğunun derinliklerinde yer alan yüksek ısıdaki aktif madde", answer: "MAGMA" },
+      { clue: "Kanyonların oluşumunda etkili sert kristal yapılı magmatik kütle", answer: "GRANİT" },
+      { clue: "Granitin yüksek sıcaklık ve basınç altında değişime uğraması sonucu oluşan taş", answer: "GNAYS" },
+      { clue: "Kayaçların oluşumu sırasında kimyasal ve fiziksel koşulların değişmesiyle mineralojik dönüşüm süreci", answer: "METAMORFİZMA" },
+      { clue: "Kalkerli arazilerdeki mağaraların tavanından aşağı doğru uzanan şekil", answer: "SARKIT" }
+    ],
+    down: [
+      { clue: "Yeryüzündeki en sert madde; karbonun yüksek basınç ve sıcaklık altında kristalleşmesiyle oluşan taş", answer: "ELMAS" },
+      { clue: "Volkanlardan çıkan ince boyutlu malzemelerin oluşturduğu kayaç", answer: "TÜF" },
+      { clue: "Dış kuvvetlerin aşındırdığı malzemelerin çukur alanlarda birikmesi", answer: "TORTUL" },
+      { clue: "Kalkerle dolomitin yüksek sıcaklık ve basınç altında kristalleşmesiyle oluşan yapı malzemesi", answer: "MERMER" },
+      { clue: "Yer kabuğunun yapı malzemesi olan ve minerallerden oluşan madde", answer: "KAYAÇ" },
+      { clue: "Genellikle siyah renkte olan volkan camı", answer: "OBSİDYEN" },
+      { clue: "Granitlerin fiziksel ve kimyasal ayrışmasıyla oluşan blok yapılar", answer: "TOR" }
+    ]
+  },
+  {
+    title: "Türkiye'nin Yer Şekilleri",
+    across: [
+      { clue: "Ülkemizde yer alan ovaların en genişi", answer: "KONYA" },
+      { clue: "En büyük delta ovamız", answer: "ÇUKUROVA" },
+      { clue: "Kalkerin geniş alanlarda erimesiyle oluşan ova", answer: "POLYE" },
+      { clue: "Yağış yetersizliğine bağlı çölleşme belirtilerinin görüldüğü alanlarımız", answer: "KARAPINAR" },
+      { clue: "Antalya ile Mersin arasında yer alan platoumuz", answer: "TAŞELİ" },
+      { clue: "Yüksek kıyılarımızda dalga aşındırmasıyla oluşan yeryüzü şekli", answer: "FALEZ" },
+      { clue: "Doğu Karadeniz kıyılarında yer alan yüksek dağlardan biri", answer: "KAÇKAR" },
+      { clue: "En geniş buzul kütlelerine sahip dağların olduğu ilimiz", answer: "AĞRI" },
+      { clue: "Ülkemiz sınırları içindeki en uzun akarsu", answer: "KIZILIRMAK" }
+    ],
+    down: [
+      { clue: "Akarsular tarafından derinçe yarılmış yüksek düzlük", answer: "YAYLA" },
+      { clue: "Genç volkanik arazilerde aşındırma sonucu oluşan ve Nevşehir çevresinde yaygın şekil", answer: "PERİBACASI" },
+      { clue: "Orta Karadeniz kıyılarında yer alan az yüksek dağ sırası", answer: "CANİK" },
+      { clue: "Eğimli arazilerde oluşan akarsuların meydana getirdiği vadi tipi", answer: "BOĞAZ" },
+      { clue: "Dağları dikine kesen akarsularla oluşturulan vadi tipi", answer: "YARMA VADİ" },
+      { clue: "Ülkemizde tombolo oluşumuna örnek gösterilen yarımadalardan biri", answer: "KAPIDAĞ" },
+      { clue: "Travertenleriyle ünlü kentimiz", answer: "PAMUKKALE" }
+    ]
+  },
+  {
+    title: "Bulmaca Şehirlerimiz",
+    across: [
+      { clue: "Ülkemizin başkenti", answer: "ANKARA" },
+      { clue: "Ülkemizin en büyük yüzölçümüne sahip kenti", answer: "KONYA" },
+      { clue: "Ülkemizin en kalabalık şehri", answer: "İSTANBUL" },
+      { clue: "Horozu ve Pamukkale travertenleri ile bilinen ilimiz", answer: "DENİZLİ" },
+      { clue: "Ülkemizin en kuzey ucunda yer alan şehrimiz", answer: "SİNOP" },
+      { clue: "Ülkemiz sınırları içindeki en uzun akarsu", answer: "KIZILIRMAK" },
+      { clue: "Yaz tatili için turistlerin en çok gittiği ilimiz", answer: "ANTALYA" },
+      { clue: "Gül yetiştiriciliği ve gül yağıyla ünlü ilimiz", answer: "ISPARTA" },
+      { clue: "Ege'nin incisi", answer: "İZMİR" },
+      { clue: "B, A, N, A, T, M harfleri karışık yazılmış ilimiz", answer: "BATMAN" },
+      { clue: "Harf sayısı en fazla olan ilimiz", answer: "AFYONKARAHISAR" },
+      { clue: "Şanlı sıfatıyla anılan güneydoğu ilimiz", answer: "ŞANLIURFA" },
+      { clue: "Herkes gider...e biz gideriz tersine atasözüyle bilinen il", answer: "MERSİN" }
+    ],
+    down: [
+      { clue: "Tarihi İpek Yolu üzerindeki doğu Anadolu şehri", answer: "ERZURUM" },
+      { clue: "Güneydoğu Anadolu'da Dicle kıyısında kurulan kadim şehir", answer: "DİYARBAKIR" },
+      { clue: "Türkiye'nin kuzeybatısındaki tarihi şehir; buğday tarlalarıyla ünlü", answer: "EDİRNE" },
+      { clue: "Kapadokya'nın bulunduğu il", answer: "NEVŞEHİR" },
+      { clue: "'Burası... dere yolu yokuştur' türküsüyle anılan şehir", answer: "BURSA" },
+      { clue: "Keban Barajı'nın yapıldığı ilin adı", answer: "ELAZIĞ" }
+    ]
+  }
+];
+
+// ============ CROSSWORD GENERATOR ============
+class CrosswordGenerator {
+  constructor(puzzle) {
+    this.puzzle = puzzle;
+    this.grid = {};
+    this.placements = [];
+    this.minR = 0; this.maxR = 0;
+    this.minC = 0; this.maxC = 0;
+    // Sayfa sınırı: ipucu sayısına göre dinamik
+    const maxClues = Math.max(puzzle.across.length, puzzle.down.length);
+    const gridFrac = maxClues > 15 ? 0.34 : maxClues > 12 ? 0.38 : 0.42;
+    const PAGE_H_PX = 1025;
+    const MIN_CELL  = 20;
+    this.maxRows = Math.floor((PAGE_H_PX * gridFrac) / MIN_CELL);
+  }
+
+  generate() {
+    const allWords = [];
+    this.puzzle.across.forEach(w => allWords.push({ ...w, dir: 'across' }));
+    this.puzzle.down.forEach(w => allWords.push({ ...w, dir: 'down' }));
+    allWords.sort((a, b) => b.answer.length - a.answer.length);
+
+    let bestResult = null;
+    let bestPlaced = 0;
+
+    for (let attempt = 0; attempt < 80; attempt++) {
+      this.grid = {};
+      this.placements = [];
+      this.minR = 0; this.maxR = 0;
+      this.minC = 0; this.maxC = 0;
+
+      const shuffled = this._shuffle([...allWords]);
+
+      // Place first word
+      const first = shuffled[0];
+      if (first.dir === 'across') {
+        this._placeWord(first, 0, 0);
+      } else {
+        this._placeWord(first, 0, 0);
+      }
+
+      // Try to place remaining
+      let unplaced = shuffled.slice(1);
+      let maxPasses = 5;
+      while (unplaced.length > 0 && maxPasses > 0) {
+        const stillUnplaced = [];
+        for (const word of unplaced) {
+          if (!this._tryPlace(word)) {
+            stillUnplaced.push(word);
+          }
+        }
+        if (stillUnplaced.length === unplaced.length) maxPasses--;
+        unplaced = stillUnplaced;
+      }
+
+      if (this.placements.length > bestPlaced) {
+        bestPlaced = this.placements.length;
+        bestResult = {
+          grid: { ...this.grid },
+          placements: [...this.placements],
+          minR: this.minR, maxR: this.maxR,
+          minC: this.minC, maxC: this.maxC
+        };
+      }
+      if (bestPlaced === allWords.length) break;
+    }
+
+    // Restore best
+    this.grid = bestResult.grid;
+    this.placements = bestResult.placements;
+    this.minR = bestResult.minR;
+    this.maxR = bestResult.maxR;
+    this.minC = bestResult.minC;
+    this.maxC = bestResult.maxC;
+
+    this._assignNumbers();
+    return this;
+  }
+
+  _shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  _key(r, c) { return `${r},${c}`; }
+
+  _placeWord(word, r, c) {
+    const letters = word.answer.split('');
+    const placement = { word, r, c, len: letters.length };
+    for (let i = 0; i < letters.length; i++) {
+      const cr = word.dir === 'across' ? r : r + i;
+      const cc = word.dir === 'across' ? c + i : c;
+      this.grid[this._key(cr, cc)] = letters[i];
+      this.minR = Math.min(this.minR, cr);
+      this.maxR = Math.max(this.maxR, cr);
+      this.minC = Math.min(this.minC, cc);
+      this.maxC = Math.max(this.maxC, cc);
+    }
+    this.placements.push(placement);
+  }
+
+  _tryPlace(word) {
+    const letters = word.answer.split('');
+    let bestPos = null;
+    let bestScore = -1;
+
+    for (let i = 0; i < letters.length; i++) {
+      for (const p of this.placements) {
+        if (p.word.dir === word.dir) continue;
+        const pLetters = p.word.answer.split('');
+        for (let j = 0; j < pLetters.length; j++) {
+          if (pLetters[j] !== letters[i]) continue;
+          let r, c;
+          if (word.dir === 'across') {
+            r = p.word.dir === 'down' ? p.r + j : p.r;
+            c = (p.word.dir === 'down' ? p.c : p.c + j) - i;
+          } else {
+            r = (p.word.dir === 'across' ? p.r : p.r + j) - i;
+            c = p.word.dir === 'across' ? p.c + j : p.c;
+          }
+          if (this._canPlace(word, r, c)) {
+            const score = this._scorePlace(word, r, c);
+            if (score > bestScore) {
+              bestScore = score;
+              bestPos = { r, c };
+            }
+          }
+        }
+      }
+    }
+
+    if (bestPos) {
+      this._placeWord(word, bestPos.r, bestPos.c);
+      return true;
+    }
+    return false;
+  }
+
+  _canPlace(word, r, c) {
+    const letters = word.answer.split('');
+    for (let i = 0; i < letters.length; i++) {
+      const cr = word.dir === 'across' ? r : r + i;
+      const cc = word.dir === 'across' ? c + i : c;
+      const k = this._key(cr, cc);
+      if (this.grid[k] !== undefined) {
+        if (this.grid[k] !== letters[i]) return false;
+      } else {
+        // Check adjacency
+        if (word.dir === 'across') {
+          const above = this.grid[this._key(cr - 1, cc)];
+          const below = this.grid[this._key(cr + 1, cc)];
+          if (above !== undefined || below !== undefined) return false;
+        } else {
+          const left = this.grid[this._key(cr, cc - 1)];
+          const right = this.grid[this._key(cr, cc + 1)];
+          if (left !== undefined || right !== undefined) return false;
+        }
+      }
+    }
+
+    // Check before and after word
+    const beforeR = word.dir === 'across' ? r : r - 1;
+    const beforeC = word.dir === 'across' ? c - 1 : c;
+    const afterR = word.dir === 'across' ? r : r + letters.length;
+    const afterC = word.dir === 'across' ? c + letters.length : c;
+    if (this.grid[this._key(beforeR, beforeC)] !== undefined) return false;
+    if (this.grid[this._key(afterR, afterC)] !== undefined) return false;
+
+    // Sayfa yüksekliği kısıtı: bu kelimeyi yerleştirirsek kaç satır olur?
+    const newMinR = Math.min(this.minR, r);
+    const newMaxR = Math.max(this.maxR, word.dir === 'across' ? r : r + letters.length - 1);
+    if (newMaxR - newMinR + 1 > this.maxRows) return false;
+
+    return true;
+  }
+
+  _scorePlace(word, r, c) {
+    let score = 0;
+    const letters = word.answer.split('');
+    for (let i = 0; i < letters.length; i++) {
+      const cr = word.dir === 'across' ? r : r + i;
+      const cc = word.dir === 'across' ? c + i : c;
+      if (this.grid[this._key(cr, cc)] === letters[i]) score += 2;
+    }
+    return score;
+  }
+
+  _assignNumbers() {
+    // Collect start positions
+    const starts = new Map();
+    for (const p of this.placements) {
+      const k = this._key(p.r, p.c);
+      if (!starts.has(k)) starts.set(k, { r: p.r, c: p.c, across: null, down: null });
+      const entry = starts.get(k);
+      if (p.word.dir === 'across') entry.across = p;
+      else entry.down = p;
+    }
+
+    // Sort by position (top-to-bottom, left-to-right)
+    const sorted = [...starts.values()].sort((a, b) => {
+      if (a.r !== b.r) return a.r - b.r;
+      return a.c - b.c;
+    });
+
+    this.numberedCells = {};
+    this.acrossClues = [];
+    this.downClues = [];
+    let num = 1;
+    for (const s of sorted) {
+      const k = this._key(s.r, s.c);
+      this.numberedCells[k] = num;
+      if (s.across) this.acrossClues.push({ num, clue: s.across.word.clue, answer: s.across.word.answer });
+      if (s.down) this.downClues.push({ num, clue: s.down.word.clue, answer: s.down.word.answer });
+      num++;
+    }
+  }
+}
+
+// ============ RENDERER ============
+const CELL_SIZE = 32;
+const PADDING = 10;
+
+function renderPuzzle(cw, showAnswers, targetCanvas, scale) {
+  scale = scale || 1;
+  const cs = CELL_SIZE * scale;
+  const pd = PADDING * scale;
+  const canvas = targetCanvas || document.getElementById('puzzleCanvas');
+  const cols = cw.maxC - cw.minC + 1;
+  const rows = cw.maxR - cw.minR + 1;
+
+  canvas.width = cols * cs + pd * 2;
+  canvas.height = rows * cs + pd * 2;
+
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  for (let r = cw.minR; r <= cw.maxR; r++) {
+    for (let c = cw.minC; c <= cw.maxC; c++) {
+      const k = `${r},${c}`;
+      const x = (c - cw.minC) * cs + pd;
+      const y = (r - cw.minR) * cs + pd;
+
+      if (cw.grid[k] !== undefined) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x, y, cs, cs);
+        ctx.strokeStyle = '#4a5568';
+        ctx.lineWidth = 1.2 * scale;
+        ctx.strokeRect(x, y, cs, cs);
+
+        if (cw.numberedCells[k]) {
+          ctx.fillStyle = '#e53e3e';
+          ctx.font = `bold ${Math.round(9 * scale)}px Arial`;
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'top';
+          ctx.fillText(cw.numberedCells[k], x + 2 * scale, y + 1.5 * scale);
+        }
+
+        if (showAnswers) {
+          ctx.fillStyle = '#2d3748';
+          ctx.font = `bold ${Math.round(14 * scale)}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(cw.grid[k], x + cs / 2, y + cs / 2 + 1.5 * scale);
+        }
+      }
+    }
+  }
+}
+
+function renderClues(cw) {
+  const acrossDiv = document.getElementById('acrossClues');
+  const downDiv = document.getElementById('downClues');
+
+  acrossDiv.innerHTML = cw.acrossClues.map(c =>
+    `<div class="clue-item"><span class="clue-num">${c.num}.</span>${c.clue}</div>`
+  ).join('');
+
+  downDiv.innerHTML = cw.downClues.map(c =>
+    `<div class="clue-item"><span class="clue-num">${c.num}.</span>${c.clue}</div>`
+  ).join('');
+}
+
+// ============ STATE ============
+let currentIndex = 0;
+let currentCW = null;
+const generatedPuzzles = [];
+
+function generateAll() {
+  for (let i = 0; i < PUZZLES.length; i++) {
+    const gen = new CrosswordGenerator(PUZZLES[i]);
+    gen.generate();
+    generatedPuzzles.push(gen);
+  }
+}
+
+function showPuzzle(idx) {
+  currentIndex = idx;
+  currentCW = generatedPuzzles[idx];
+  document.getElementById('puzzleLabel').textContent = `Bulmaca ${idx + 1} / ${PUZZLES.length}`;
+  document.getElementById('puzzleTitle').textContent = PUZZLES[idx].title;
+  document.getElementById('btnPrev').disabled = idx === 0;
+  document.getElementById('btnNext').disabled = idx === PUZZLES.length - 1;
+  renderPuzzle(currentCW, false);
+  renderClues(currentCW);
+}
+
+function navigate(dir) {
+  const newIdx = currentIndex + dir;
+  if (newIdx >= 0 && newIdx < PUZZLES.length) showPuzzle(newIdx);
+}
+
+// ============ PNG DOWNLOAD ============
+function downloadPNG(withAnswers) {
+  const offscreen = document.createElement('canvas');
+  renderPuzzle(currentCW, withAnswers, offscreen, 2);
+  const link = document.createElement('a');
+  const suffix = withAnswers ? '_cevap' : '_bos';
+  link.download = `bulmaca_${currentIndex + 1}${suffix}.png`;
+  link.href = offscreen.toDataURL('image/png');
+  link.click();
+}
+
+// ============ DOCX GENERATION ============
+function showLoading(text) {
+  document.getElementById('loadingText').textContent = text || 'DOCX hazırlanıyor...';
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+function canvasToUint8(canvas) {
+  const b64 = canvas.toDataURL('image/png').split(',')[1];
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return arr;
+}
+
+// ── Kitapçık renk paleti ──────────────────────────────
+const C = {
+  primary:  '5B2C8B',  // derin mor - başlık, ana aksanlar
+  medium:   '7B4FAF',  // orta mor - ikincil öğeler
+  light:    'EDE8F8',  // açık mor - tablo arka planı
+  ink:      '2C2C2C',  // ana metin
+  muted:    '6B6B8B',  // soluk metin, bulmaca numarası
+  gridLine: '9B7BC8',  // ızgara çizgileri (açık mor)
+  gridBg:   'F4F0FA',  // ızgara hücre arka planı (çok açık mor)
+  numBadge: '5B2C8B',  // hücre numara rozeti arka planı
+  answer:   '2C1A5C',  // cevap harfleri (koyu mor)
+  white:    'FFFFFF',  // beyaz
+};
+const FONT_SERIF = 'Georgia';
+const FONT_SANS  = 'Calibri';
+
+function renderBookletGrid(cw, showAnswers, cellPx) {
+  const cols = cw.maxC - cw.minC + 1;
+  const rows = cw.maxR - cw.minR + 1;
+  const sc  = 3;
+  const rcs = cellPx * sc;
+  const pad = 4 * sc;
+  const lw  = Math.round(1.6 * sc); // tek çizgi kalınlığı — hiç çift çizilmeyecek
+
+  const canvas = document.createElement('canvas');
+  canvas.width  = cols * rcs + pad * 2;
+  canvas.height = rows * rcs + pad * 2;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // 1) Tüm aktif hücrelerin arka planını doldur
+  const cellFill = showAnswers ? '#EDE8F8' : '#' + C.gridBg;
+  for (let r = cw.minR; r <= cw.maxR; r++) {
+    for (let c = cw.minC; c <= cw.maxC; c++) {
+      if (cw.grid[`${r},${c}`] !== undefined) {
+        ctx.fillStyle = cellFill;
+        ctx.fillRect((c - cw.minC) * rcs + pad, (r - cw.minR) * rcs + pad, rcs, rcs);
+      }
+    }
+  }
+
+  // 2) Çizgileri path ile tek seferde çiz — her kenar yalnızca bir kez
+  ctx.strokeStyle = '#' + C.gridLine;
+  ctx.lineWidth   = lw;
+  ctx.lineCap     = 'square';
+  ctx.beginPath();
+
+  for (let r = cw.minR; r <= cw.maxR; r++) {
+    for (let c = cw.minC; c <= cw.maxC; c++) {
+      if (cw.grid[`${r},${c}`] === undefined) continue;
+      const x = (c - cw.minC) * rcs + pad;
+      const y = (r - cw.minR) * rcs + pad;
+
+      // Üst kenar: üst komşu yoksa çiz
+      if (cw.grid[`${r-1},${c}`] === undefined) {
+        ctx.moveTo(x, y); ctx.lineTo(x + rcs, y);
+      }
+      // Sol kenar: sol komşu yoksa çiz
+      if (cw.grid[`${r},${c-1}`] === undefined) {
+        ctx.moveTo(x, y); ctx.lineTo(x, y + rcs);
+      }
+      // Sağ kenar: sağ komşu yoksa çiz
+      if (cw.grid[`${r},${c+1}`] === undefined) {
+        ctx.moveTo(x + rcs, y); ctx.lineTo(x + rcs, y + rcs);
+      }
+      // Alt kenar: alt komşu yoksa çiz
+      if (cw.grid[`${r+1},${c}`] === undefined) {
+        ctx.moveTo(x, y + rcs); ctx.lineTo(x + rcs, y + rcs);
+      }
+      // İç yatay bölücü: üst komşu varsa (paylaşılan üst kenar)
+      if (cw.grid[`${r-1},${c}`] !== undefined) {
+        ctx.moveTo(x, y); ctx.lineTo(x + rcs, y);
+      }
+      // İç dikey bölücü: sol komşu varsa
+      if (cw.grid[`${r},${c-1}`] !== undefined) {
+        ctx.moveTo(x, y); ctx.lineTo(x, y + rcs);
+      }
+    }
+  }
+  ctx.stroke();
+
+  // 3) Numaralar ve harfler
+  for (let r = cw.minR; r <= cw.maxR; r++) {
+    for (let c = cw.minC; c <= cw.maxC; c++) {
+      const k = `${r},${c}`;
+      if (cw.grid[k] === undefined) continue;
+      const x = (c - cw.minC) * rcs + pad;
+      const y = (r - cw.minR) * rcs + pad;
+
+      if (cw.numberedCells[k]) {
+        const num = String(cw.numberedCells[k]);
+        if (!showAnswers) {
+          // Boş ızgara: mor badge
+          const badgeSz = 9 * sc;
+          const bx = x + 1.5 * sc;
+          const by = y + 1.5 * sc;
+          ctx.fillStyle = '#' + C.numBadge;
+          ctx.beginPath();
+          ctx.roundRect(bx, by, badgeSz, badgeSz, 1.5 * sc);
+          ctx.fill();
+          ctx.fillStyle = '#' + C.white;
+          ctx.font = `bold ${Math.round(6.5 * sc)}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(num, bx + badgeSz / 2, by + badgeSz / 2);
+        } else {
+          // Cevap anahtarı: sol üst köşede küçük numara
+          ctx.fillStyle = '#' + C.muted;
+          ctx.font = `${Math.round(5.5 * sc)}px Arial`;
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'top';
+          ctx.fillText(num, x + 2 * sc, y + 1.5 * sc);
+        }
+      }
+      if (showAnswers && cw.grid[k]) {
+        ctx.fillStyle = '#' + C.answer;
+        ctx.font = `bold ${Math.round(12 * sc)}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(cw.grid[k], x + rcs / 2, y + rcs / 2 + 2 * sc);
+      }
+    }
+  }
+
+  return canvas;
+}
+
+function buildPuzzlePage(cw, idx, showAnswers) {
+  const { Paragraph, TextRun, ImageRun, AlignmentType, BorderStyle,
+          TableRow, TableCell, Table, WidthType, ShadingType } = docx;
+
+  // A4 kullanılabilir alan (96dpi piksel)
+  const PAGE_W_PX = 697;
+  const PAGE_H_PX = 1025;
+  const maxClues = Math.max(cw.acrossClues.length, cw.downClues.length);
+  const MAX_GRID_H = PAGE_H_PX * (maxClues > 15 ? 0.34 : maxClues > 12 ? 0.38 : 0.42);
+  const MAX_CELL_PX = 36;
+  const MIN_CELL_PX = 20;
+
+  const cols = cw.maxC - cw.minC + 1;
+  const rows = cw.maxR - cw.minR + 1;
+
+  let cellPx = Math.min(MAX_CELL_PX, Math.floor((PAGE_W_PX - 8) / cols), Math.floor((MAX_GRID_H - 8) / rows));
+  cellPx = Math.max(cellPx, MIN_CELL_PX);
+
+  let imgW = cols * cellPx + 8;
+  let imgH = rows * cellPx + 8;
+  if (imgW > PAGE_W_PX) {
+    cellPx = Math.floor((PAGE_W_PX - 8) / cols);
+    imgW = cols * cellPx + 8;
+    imgH = rows * cellPx + 8;
+  }
+
+  const gridCanvas = renderBookletGrid(cw, showAnswers, cellPx);
+  const imgData = canvasToUint8(gridCanvas);
+
+  const children = [];
+
+  // ── Bulmaca numarası ──
+  children.push(new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 0, after: 30 },
+    children: [
+      new TextRun({
+        text: `BULMACA ${idx + 1}`,
+        size: 16, font: FONT_SANS, color: C.muted, characterSpacing: 120
+      })
+    ]
+  }));
+
+  // ── Başlık ──
+  children.push(new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { after: 60 },
+    border: { bottom: { style: BorderStyle.THICK, size: 8, color: C.primary } },
+    children: [
+      new TextRun({
+        text: PUZZLES[idx].title,
+        bold: true, size: 34, font: FONT_SANS, color: C.primary
+      })
+    ]
+  }));
+
+  // ── Izgara ──
+  children.push(new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 60, after: 80 },
+    children: [
+      new ImageRun({
+        data: imgData,
+        transformation: { width: imgW, height: imgH },
+        type: 'png'
+      })
+    ]
+  }));
+
+  // ── İpuçları: 4 sütunlu tablo ──
+  const CLUE_SZ  = maxClues > 15 ? 13 : maxClues > 12 ? 14 : 15;
+  const NUM_SZ   = CLUE_SZ;
+  const HEAD_SZ  = maxClues > 15 ? 14 : 15;
+  const rowMgn   = maxClues > 15 ? 20 : maxClues > 12 ? 28 : 40;
+
+  // Header satırı
+  const headerRow = new TableRow({
+    tableHeader: true,
+    children: [
+      new TableCell({
+        width: { size: 6, type: WidthType.PERCENTAGE },
+        shading: { type: ShadingType.SOLID, color: C.primary },
+        margins: { top: 60, bottom: 60, left: 80, right: 60 },
+        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } },
+        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Nu.', bold: true, size: HEAD_SZ, font: FONT_SANS, color: C.white })] })]
+      }),
+      new TableCell({
+        width: { size: 44, type: WidthType.PERCENTAGE },
+        shading: { type: ShadingType.SOLID, color: C.primary },
+        margins: { top: 60, bottom: 60, left: 80, right: 80 },
+        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } },
+        children: [new Paragraph({ children: [new TextRun({ text: 'SOLDAN SAĞA  →', bold: true, size: HEAD_SZ, font: FONT_SANS, color: C.white })] })]
+      }),
+      new TableCell({
+        width: { size: 6, type: WidthType.PERCENTAGE },
+        shading: { type: ShadingType.SOLID, color: C.primary },
+        margins: { top: 60, bottom: 60, left: 80, right: 60 },
+        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } },
+        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Nu.', bold: true, size: HEAD_SZ, font: FONT_SANS, color: C.white })] })]
+      }),
+      new TableCell({
+        width: { size: 44, type: WidthType.PERCENTAGE },
+        shading: { type: ShadingType.SOLID, color: C.primary },
+        margins: { top: 60, bottom: 60, left: 80, right: 80 },
+        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } },
+        children: [new Paragraph({ children: [new TextRun({ text: 'YUKARIDAN AŞAĞIYA  ↓', bold: true, size: HEAD_SZ, font: FONT_SANS, color: C.white })] })]
+      })
+    ]
+  });
+
+  // Veri satırları
+  const maxLen = Math.max(cw.acrossClues.length, cw.downClues.length);
+  const dataRows = [];
+  for (let i = 0; i < maxLen; i++) {
+    const ac = cw.acrossClues[i];
+    const dn = cw.downClues[i];
+    const rowBg = i % 2 === 0 ? C.white : 'F8F5FD';
+    const makeCluePair = (clueObj) => [
+      new TableCell({
+        width: { size: 6, type: WidthType.PERCENTAGE },
+        shading: { type: ShadingType.SOLID, color: rowBg },
+        margins: { top: rowMgn, bottom: rowMgn, left: 80, right: 40 },
+        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } },
+        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: clueObj ? [new TextRun({ text: String(clueObj.num), bold: true, size: NUM_SZ, font: FONT_SANS, color: C.primary })] : [] })]
+      }),
+      new TableCell({
+        width: { size: 44, type: WidthType.PERCENTAGE },
+        shading: { type: ShadingType.SOLID, color: rowBg },
+        margins: { top: rowMgn, bottom: rowMgn, left: 80, right: 80 },
+        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } },
+        children: [new Paragraph({ children: clueObj ? [new TextRun({ text: clueObj.clue, size: CLUE_SZ, font: FONT_SANS, color: C.ink })] : [] })]
+      })
+    ];
+    dataRows.push(new TableRow({
+      children: [...makeCluePair(ac), ...makeCluePair(dn)]
+    }));
+  }
+
+  const clueTable = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    borders: {
+      top:           { style: BorderStyle.SINGLE, size: 4, color: C.primary },
+      bottom:        { style: BorderStyle.SINGLE, size: 4, color: C.primary },
+      left:          { style: BorderStyle.NONE },
+      right:         { style: BorderStyle.NONE },
+      insideH:       { style: BorderStyle.NONE },
+      insideV:       { style: BorderStyle.NONE }
+    },
+    rows: [headerRow, ...dataRows]
+  });
+
+  children.push(clueTable);
+  return children;
+}
+
+async function downloadSingleDocx(showAnswers) {
+  showLoading(`Bulmaca ${currentIndex + 1} DOCX hazırlanıyor...`);
+  await new Promise(r => setTimeout(r, 50));
+
+  try {
+    const { Document, Packer } = docx;
+    const doc = new Document({
+      sections: [{
+        properties: {
+          page: {
+            size: { width: 11906, height: 16838 },
+            margin: { top: 720, bottom: 720, left: 720, right: 720 }
+          }
+        },
+        children: buildPuzzlePage(currentCW, currentIndex, showAnswers)
+      }]
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const suffix = showAnswers ? '_cevap' : '_bos';
+    saveAs(blob, `bulmaca_${currentIndex + 1}${suffix}.docx`);
+  } catch (e) {
+    console.error(e);
+    alert('DOCX olusturulurken hata: ' + e.message);
+  }
+  hideLoading();
+}
+
+function buildAnswerKeyPages() {
+  const { Paragraph, TextRun, ImageRun, AlignmentType, BorderStyle } = docx;
+  const ANSWERS_PER_PAGE = 2;
+  const pages = [];
+
+  for (let i = 0; i < generatedPuzzles.length; i += ANSWERS_PER_PAGE) {
+    const children = [];
+
+    // ── Sayfa başlığı (sadece ilk cevap anahtarı sayfasında) ──
+    if (i === 0) {
+      children.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 50 },
+        children: [
+          new TextRun({
+            text: 'CEVAP ANAHTARLARI',
+            bold: true, size: 28, font: FONT_SERIF,
+            color: C.primary, characterSpacing: 100
+          })
+        ]
+      }));
+      children.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 120 },
+        border: { bottom: { style: BorderStyle.DOUBLE, size: 6, color: C.primary } },
+        children: [new TextRun({ text: ' ', size: 2 })]
+      }));
+    }
+
+    const end = Math.min(i + ANSWERS_PER_PAGE, generatedPuzzles.length);
+    for (let j = i; j < end; j++) {
+      const cw = generatedPuzzles[j];
+      const cols = cw.maxC - cw.minC + 1;
+      const rows = cw.maxR - cw.minR + 1;
+
+      // Cevap anahtarı için hücre boyutu (2/sayfa, daha büyük)
+      const maxW = 510;
+      const maxH = 340;
+      let cellPx = Math.min(24, Math.floor((maxW - 8) / cols), Math.floor((maxH - 8) / rows));
+      cellPx = Math.max(cellPx, 12);
+
+      const gridCanvas = renderBookletGrid(cw, true, cellPx);
+      const imgW = cols * cellPx + 8;
+      const imgH = rows * cellPx + 8;
+      const imgData = canvasToUint8(gridCanvas);
+
+      // Bulmaca etiketi
+      children.push(new Paragraph({
+        spacing: { before: j > i ? 140 : 0, after: 30 },
+        border: { bottom: { style: BorderStyle.SINGLE, size: 3, color: C.primary } },
+        children: [
+          new TextRun({
+            text: `Bulmaca ${j + 1}`,
+            bold: true, size: 20, font: FONT_SERIF, color: C.primary
+          }),
+          new TextRun({
+            text: `  \u2014  ${PUZZLES[j].title}`,
+            size: 18, font: FONT_SERIF, color: C.muted
+          })
+        ]
+      }));
+
+      // Cevap ızgarası
+      children.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 30 },
+        children: [
+          new ImageRun({
+            data: imgData,
+            transformation: { width: imgW, height: imgH },
+            type: 'png'
+          })
+        ]
+      }));
+    }
+
+    pages.push({
+      properties: {
+        page: {
+          size: { width: 11906, height: 16838 },
+          margin: { top: 720, bottom: 720, left: 720, right: 720 }
+        }
+      },
+      children
+    });
+  }
+
+  return pages;
+}
+
+async function downloadAllDocx(showAnswers) {
+  showLoading('Tüm bulmacalar DOCX hazırlanıyor...');
+  await new Promise(r => setTimeout(r, 50));
+
+  try {
+    const { Document, Packer } = docx;
+    const sections = [];
+
+    // Puzzle pages (always empty/blank)
+    for (let i = 0; i < generatedPuzzles.length; i++) {
+      document.getElementById('loadingText').textContent =
+        `DOCX: Bulmaca ${i + 1} / ${generatedPuzzles.length}`;
+      await new Promise(r => setTimeout(r, 10));
+
+      sections.push({
+        properties: {
+          page: {
+            size: { width: 11906, height: 16838 },
+            margin: { top: 720, bottom: 720, left: 720, right: 720 }
+          }
+        },
+        children: buildPuzzlePage(generatedPuzzles[i], i, false)
+      });
+    }
+
+    // Answer key pages at the end
+    document.getElementById('loadingText').textContent = 'Cevap anahtarları ekleniyor...';
+    await new Promise(r => setTimeout(r, 10));
+    const answerPages = buildAnswerKeyPages();
+    sections.push(...answerPages);
+
+    const doc = new Document({ sections });
+    const blob = await Packer.toBlob(doc);
+    saveAs(blob, 'bulmacalar.docx');
+  } catch (e) {
+    console.error(e);
+    alert('DOCX olusturulurken hata: ' + e.message);
+  }
+  hideLoading();
+}
+
+// ============ INIT ============
+generateAll();
+showPuzzle(0);
+</script>
+</body>
+</html>
