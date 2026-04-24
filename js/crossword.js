@@ -20,7 +20,7 @@ class CrosswordGenerator {
     // Max-row cap: prevents grid from overflowing a page
     const maxClues = Math.max(puzzle.across.length, puzzle.down.length);
     const frac     = maxClues > 15 ? 0.34 : maxClues > 12 ? 0.38 : 0.42;
-    this.maxRows   = Math.floor((1025 * frac) / 20);
+    this.maxRows   = Math.floor((window.innerHeight * frac) / 20);
   }
 
   // Normalize answer: strip spaces (e.g. "SU BUHARI" → "SUBUHARI")
@@ -58,6 +58,7 @@ class CrosswordGenerator {
       if (bestPlaced === allWords.length) break;
     }
 
+    if (!bestResult) return this;
     Object.assign(this, bestResult);
     this._assignNumbers();
     return this;

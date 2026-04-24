@@ -75,10 +75,14 @@ function isFirstVisit() {
 }
 
 // ── Bootstrap ────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  for (let i = 0; i < PUZZLES.length; i++) {
-    generatedPuzzles.push(new CrosswordGenerator(PUZZLES[i], i + 1).generate());
+function getOrGenerate(idx) {
+  if (!generatedPuzzles[idx]) {
+    generatedPuzzles[idx] = new CrosswordGenerator(PUZZLES[idx], idx + 1).generate();
   }
+  return generatedPuzzles[idx];
+}
+
+document.addEventListener('DOMContentLoaded', () => {
 
   // Buttons
   // Skor alanına tap = manuel tamamlama kontrolü (yedek)
@@ -159,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       updateAppHeight();
-      const cw = generatedPuzzles[currentIdx];
+      const cw = getOrGenerate(currentIdx);
       if (!cw) return;
       renderGrid(cw);
       for (const k of Object.keys(userLetters)) {
@@ -181,6 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── Puzzle render ────────────────────────────────────────────────────────────
 function showPuzzle(idx) {
+  clearTimeout(_completionBackupTimer);
   currentIdx = idx;
   feedbackOn             = false;
   activeCell             = null;
@@ -192,7 +197,7 @@ function showPuzzle(idx) {
   hintedCells.clear();
   autoRevealedCells.clear();
 
-  const cw  = generatedPuzzles[idx];
+  const cw  = getOrGenerate(idx);
   const puz = PUZZLES[idx];
 
   document.getElementById('puzzleTitle')  .textContent = puz.title;
@@ -304,7 +309,13 @@ function renderClueList(containerId, clues, dir) {
     item.className   = 'clue-item';
     item.dataset.num = cl.num;
     item.dataset.dir = dir;
-    item.innerHTML   = `<span class="clue-num">${cl.num}</span><span>${cl.clue}</span>`;
+    const numSpan = document.createElement('span');
+    numSpan.className   = 'clue-num';
+    numSpan.textContent = cl.num;
+    const textSpan = document.createElement('span');
+    textSpan.textContent = cl.clue;
+    item.appendChild(numSpan);
+    item.appendChild(textSpan);
     item.addEventListener('click', () => focusCell(cl.r, cl.c, dir));
     container.appendChild(item);
   });
@@ -832,7 +843,8 @@ function showLevelComplete(cw) {
   if (isNewRecord && prevBest) {
     bestEl.textContent = '🎉 Yeni rekor!';
   } else if (!isNewRecord && prevBest) {
-    bestEl.textContent = `En iyi: ${'★'.repeat(prevBest.stars)} — ${prevBest.score} puan`;
+    const clampedStars = Math.min(3, Math.max(0, prevBest.stars || 0));
+    bestEl.textContent = `En iyi: ${'★'.repeat(clampedStars)} — ${prevBest.score} puan`;
   } else {
     bestEl.textContent = '';
   }

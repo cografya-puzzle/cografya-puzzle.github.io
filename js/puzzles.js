@@ -89,7 +89,6 @@ const PUZZLES = [
     down: [
       { clue: "Katı yer kabuğu", answer: "LİTOSFER" },
       { clue: "Canlıların yaşadığı yer", answer: "BİYOSFER" },
-      { clue: "Bitki, hayvan ve insanın olduğu küre", answer: "BİYOSFER" },
     ],
   },
   {

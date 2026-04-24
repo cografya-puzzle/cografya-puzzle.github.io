@@ -486,7 +486,12 @@ main {
   flex-direction: column;
   overflow: hidden;
   flex-shrink: 0;
-  height: clamp(220px, 42dvh, 360px);
+  height: clamp(220px, 42vh, 360px);
+}
+@supports (height: 1dvh) {
+  .bottom-sheet {
+    height: clamp(220px, 42dvh, 360px);
+  }
 }
 
 /* Drag handle */
